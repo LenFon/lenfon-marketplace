@@ -1,0 +1,17 @@
+{
+  "name": "wpf-basic-template",
+  "version": "1.4.0",
+  "description": "用户标准化 WPF 脚手架（Prism 9 + Material Design 5【默认 MD3 样式】+ CommunityToolkit.Mvvm + CPM + slnx + src 分层）。用于新建 WPF 项目/解决方案/View/UserControl，直接套用 templates/ 全套文件。",
+  "author": {
+    "name": "lenfon",
+    "email": ""
+  },
+  "homepage": {
+    "url": "",
+    "type": "github"
+  },
+  "license": "MIT",
+  "skills": [
+    "./SKILL.md"
+  ]
+}

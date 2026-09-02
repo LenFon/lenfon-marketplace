@@ -1,0 +1,44 @@
+{
+  "name": "lenfon-marketplace",
+ "description": "lenfon 的个人本地用户市场：以 directory 型固化在本机，内容不会被远程同步覆盖。当前收录 WPF/.NET 桌面开发技能——material-design-styles（MaterialDesignInXamlToolkit 样式参考与控件选型指南）、wpf-basic-template（Prism 9 + Material Design 5 标准化 WPF 脚手架），并持续扩充。",
+ "description_en": "lenfon's personal local user marketplace, persisted as a directory on this machine and never overwritten by remote sync. Currently hosts WPF/.NET desktop development skills — material-design-styles (MaterialDesignInXamlToolkit style reference & control pick guide) and wpf-basic-template (standardized WPF scaffold with Prism 9 + Material Design 5) — and keeps growing.",
+  "owner": {
+    "name": "lenfon",
+    "email": ""
+  },
+  "metadata": {
+    "version": "1.0.0"
+  },
+  "plugins": [
+    {
+      "name": "material-design-styles",
+      "description": "MaterialDesignInXamlToolkit 命名样式参考与 WPF 控件样式选型指南（基于最新稳定版 v5.3.2）。",
+      "source": "./plugins/material-design-styles",
+      "version": "1.0.0",
+      "category": "wpf",
+      "author": {
+        "name": "lenfon"
+      },
+      "homepage": "",
+      "license": "MIT",
+      "skills": [
+        "./plugins/material-design-styles"
+      ]
+    },
+    {
+      "name": "wpf-basic-template",
+      "description": "用户标准化 WPF 脚手架（Prism 9 + Material Design 5 + CommunityToolkit.Mvvm + CPM + slnx + src 分层）。",
+      "source": "./plugins/wpf-basic-template",
+      "version": "1.4.0",
+      "category": "wpf",
+      "author": {
+        "name": "lenfon"
+      },
+      "homepage": "",
+      "license": "MIT",
+      "skills": [
+        "./plugins/wpf-basic-template"
+      ]
+    }
+  ]
+}
