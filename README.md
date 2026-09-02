@@ -12,35 +12,9 @@ lenfon 的个人 WorkBuddy 用户市场，收录 WPF/.NET 桌面开发方向的�
 
 ## 在 WorkBuddy 中安装
 
-### 方式一：界面操作（推荐）
-1. 打开 WorkBuddy → 进入插件 / 技能（市场）管理页面；
-2. 选择「添加插件市场」，粘贴安装地址：
-   ```
-   https://github.com/LenFon/lenfon-marketplace
-   ```
-3. 确认后 WorkBuddy 自动拉取仓库并识别出 `lenfon-marketplace`；
-4. 在市场详情中安装并启用插件：`material-design-styles`、`wpf-basic-template`；
-5. 重启 WorkBuddy（或新开会话）后即可在技能列表中调用。
-
-### 方式二：让 AI 代装
 在 WorkBuddy 对话中直接发送下面这句即可（AI 会代为添加并启用插件）：
 
 > 请添加插件市场 https://github.com/LenFon/lenfon-marketplace ，并安装、启用其中的 material-design-styles 与 wpf-basic-template。
-
-### 方式三：CLI（可选，CodeBuddy Code 命令行）
-```bash
-codebuddy plugin marketplace add https://github.com/LenFon/lenfon-marketplace -n lenfon-marketplace
-codebuddy plugin install material-design-styles@lenfon-marketplace
-codebuddy plugin install wpf-basic-template@lenfon-marketplace
-```
-
-## 更新市场内容
-
-市场源更新并推送（`git push origin main`）后，使用方在 WorkBuddy 市场管理中对 `lenfon-marketplace` 执行「更新 / 刷新」即可同步，或运行：
-
-```bash
-codebuddy plugin marketplace update lenfon-marketplace
-```
 
 ## 目录结构
 
