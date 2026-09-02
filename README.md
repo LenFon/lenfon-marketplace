@@ -35,22 +35,3 @@ lenfon-marketplace/            # 即 GitHub 仓库根，clone 后即为市场
         ├── README.md
         └── templates/           # 全套模板文件（slnx/分层 src/...）
 ```
-
-插件目录内不含 `.git` / `.gitignore` / `LICENSE` 等仓库元数据，保持发布形态干净。
-
-## 维护：添加新插件并发布
-
-1. 复制技能目录到 `plugins/<name>/`；
-2. 补写 `plugins/<name>/.codebuddy-plugin/plugin.json`（版本格式 `x.y.z`，`skills` 用相对插件根的路径如 `./SKILL.md`）；
-3. 在 `.codebuddy-plugin/marketplace.json` 的 `plugins` 数组登记一项；
-4. 提交推送发布：
-   ```bash
-   git add -A
-   git commit -m "feat: 新增插件 <name>"
-   git push origin main
-   ```
-5. 使用方对市场执行「更新」即可看到新插件。
-
-## 本机既有安装（2026-09 首装，无需重装）
-
-本机仍以 `directory` 型注册在 `known_marketplaces.json` 并直连本目录，插件已启用（启用键 `material-design-styles@lenfon-marketplace`、`wpf-basic-template@lenfon-marketplace`）。本仓库即该本地目录的 git 镜像与分发源，功能等价。
