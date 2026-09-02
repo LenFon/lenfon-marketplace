@@ -2,6 +2,7 @@
   <Folder Name="/解决方案项/">
     <File Path="Directory.Build.props" />
     <File Path="Directory.Packages.props" />
+    <File Path="nuget.config" />
   </Folder>
   <Folder Name="/src/">
     <Project Path="src/__APP_NAME__.Application/__APP_NAME__.Application.csproj" />

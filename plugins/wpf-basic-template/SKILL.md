@@ -1,7 +1,7 @@
 ---
 name: wpf-basic-template
 version: 1.4.0
-description: 用户标准化 WPF 脚手架（Prism 9 + Material Design 5【默认 MD3 样式】+ CommunityToolkit.Mvvm + CPM + slnx + src 分层）。用于新建 WPF 项目/解决方案/View/UserControl，直接套用 templates/ 全套文件。内置已验证包组合、目录与分层约定、**凡 [ObservableProperty] 一律强制 C# 13 分部属性写法（禁私有字段老写法，含生成后自检脚本）**、View 设计时绑定、共享转换器字典、跨 DLL 命名空间带 ;assembly=、纯 UTF-8（无 BOM）、XML 文档注释多行格式约束、单行注释置于被注释的变量/字段上方（禁行尾跟随）、优先使用 var 定义变量、以及编译失败迭代修复到 0 错 + 本机 DLP 环境编译验证绕法。
+description: 用户标准化 WPF 脚手架（Prism 9 + Material Design 5【默认 MD3 样式】+ CommunityToolkit.Mvvm + CPM + slnx + src 分层）。用于新建 WPF 项目/解决方案/View/UserControl，直接套用 templates/ 全套文件。内置已验证包组合、目录与分层约定、nuget.config 源配置（仅官方源）、**凡 [ObservableProperty] 一律强制 C# 13 分部属性写法（禁私有字段老写法，含生成后自检脚本）**、View 设计时绑定、共享转换器字典、跨 DLL 命名空间带 ;assembly=、纯 UTF-8（无 BOM）、XML 文档注释多行格式约束、单行注释置于被注释的变量/字段上方（禁行尾跟随）、优先使用 var 定义变量、以及编译失败迭代修复到 0 错 + 本机 DLP 环境编译验证绕法。
 agent_created: true
 ---
 
@@ -16,6 +16,7 @@ agent_created: true
 ├─ <AppName>.slnx                        <- slnx 格式，不用 .sln
 ├─ Directory.Packages.props              <- CPM，与 slnx 同层
 ├─ Directory.Build.props                 <- 公共属性，与 slnx 同层
+├─ nuget.config                          <- NuGet 源配置（仅官方源）
 └─ src/                                  <- 所有项目一律在 src/ 下
    ├─ <AppName>/                         netX.0-windows，WPF 应用（Prism 组合根）
    │  ├─ Views/  ViewModels/
@@ -27,7 +28,7 @@ agent_created: true
 - **依赖方向**：`<AppName>` → `Infrastructure` → `Application` → `Domain`；WPF 应用作为组合根可直引全部三层。
 - **命名空间跟随程序集**：`<AppName>.Domain.Models` / `<AppName>.Application.Services` / `<AppName>.Infrastructure.Services`。
 - **目标框架**：类库用 `netX.0`（不带 `-windows`），仅 WPF 应用用 `netX.0-windows`。
-- **文件编码：纯 UTF-8（无 BOM）**。所有源文件（`.cs`/`.xaml`/`.csproj`/`.props`/`.slnx`/`.xml`/`.json`/`.md`）一律 `utf-8` 存储，不带 BOM、不用 GBK。判定：首字节 `EF BB BF` 是 BOM（应剥离），`FF FE`/`FE FF` 是 UTF-16（应转 UTF-8）。改造既有文件用 Python 字节级剥离 BOM（`data[3:]`），**勿整文件解码重编码**（本机 DLP 会对非白名单读取器注入坏字节，见第六节）。
+- **文件编码：纯 UTF-8（无 BOM）**。所有源文件（`.cs`/`.xaml`/`.csproj`/`.props`/`.config`/`.slnx`/`.xml`/`.json`/`.md`）一律 `utf-8` 存储，不带 BOM、不用 GBK。判定：首字节 `EF BB BF` 是 BOM（应剥离），`FF FE`/`FE FF` 是 UTF-16（应转 UTF-8）。改造既有文件用 Python 字节级剥离 BOM（`data[3:]`），**勿整文件解码重编码**（本机 DLP 会对非白名单读取器注入坏字节，见第六节）。
 
 ## 二、包组合（全部最新稳定版，禁 preview/alpha/beta/rc）
 
@@ -44,6 +45,8 @@ agent_created: true
 
 建新项目时**先查 nuget.org 拿最新稳定版**再改 `Directory.Packages.props`，勿沿用旧版本号。
 
+**NuGet 源（`nuget.config`，模板随附、放解决方案根）**：**仅官方 `nuget.org`**，不内置任何国内镜像 / 第三方源。需要私有 / 内网源（如公司源）或自行维护的镜像时，在 `<packageSources>` 内追加 `<add key="名称" value="地址"/>`。文件在 `<packageSources>` 首行写了 `<clear />`，排除机器级 / 用户级源（`local`、VS Offline Packages 等），还原行为可复现——仅走本文件显式声明的源；如确需本机其它源参与还原，删掉该 `<clear />` 即可。
+
 ## 三、搭建步骤
 
 ```bash
@@ -54,9 +57,9 @@ mkdir -p <AppName>/src/<AppName>/Views <AppName>/src/<AppName>/ViewModels \
          <AppName>/src/<AppName>.Infrastructure
 
 # 2. 拷模板（templates/ 全套文件），全局替换占位符 __APP_NAME__ -> 实际项目名
-# 3. 推荐直接用模板里的 __APP_NAME__.slnx（已含「解决方案项」文件夹）；
+# 3. 推荐直接用模板里的 __APP_NAME__.slnx（已含「解决方案项」文件夹：两 props + nuget.config）；
 #    若手动生成：dotnet new sln -n <AppName> --format slnx，再 dotnet sln add 四个 csproj --solution-folder src，
-#    并手动在 <Solution> 根下加 <Folder Name="/解决方案项/"><File Path="Directory.Build.props"/><File Path="Directory.Packages.props"/></Folder>
+#    并手动在 <Solution> 根下加 <Folder Name="/解决方案项/"><File Path="Directory.Build.props"/><File Path="Directory.Packages.props"/><File Path="nuget.config"/></Folder>
 # 4. 还原 + 构建
 dotnet restore && dotnet build --no-restore
 ```
@@ -319,6 +322,7 @@ fi
 | **文件编码异常（UTF-16 / 带 BOM）** | 模板/生成文件若变成 UTF-16 或带 BOM，Read 工具会判 binary 且不合「纯 UTF-8（无 BOM）」约定。用 Python 写 `utf-8` 后 `os.replace` 覆盖（沙箱 `os.remove` 被 safe-delete 拦截，但 `os.replace` 可用）；**勿整文件解码重编码**（触发 DLP 注入坏字节）。 |
 | **sln 与 slnx 不能并存** | 同目录有两个解决方案文件时，无参 `dotnet build` 报「找到多个解决方案文件」。迁移后必须移走旧 `.sln`。 |
 | **CPM 被破坏** | `dotnet add package` 会把版本写死进 csproj。改版本一律编辑 `Directory.Packages.props`。 |
+| **nuget.org 直连慢 / 还原拉源漂移** | 模板 `nuget.config` **仅官方源 + `<clear />`**（还原只走本文件声明的源，行为可复现）。直连慢时自行加镜像 / 内网源（`curl -I` 验证可用后再加）；多源并存时同名包版本可能漂移，如确需本机 `local` / VS Offline 源参与还原，删掉 `<packageSources>` 首行的 `<clear />` 即可。 |
 | **`shutil.rmtree` 被 safe-delete 拦截** | WinError 5 且中断脚本。清理目录用 `os.replace()` 移到 `C:\Temp\WpfTrash`，不要删。 |
 | **`dotnet msbuild` 被安全策略拦截** | 判为 LOLBin。要触达标记编译改用 `dotnet build <csproj> -p:BuildProjectReferences=false`。 |
 | **`git push` 卡死在 `Pushing to ...`** | 现象：push 打印 `Pushing to <url>` 后长时间挂起（`timeout 240` 仍不返回），但 `git ls-remote` 读取正常且瞬时。根因：本机网络/DLP 对 HTTPS 的 **HTTP/2 协商**处理有缺陷，`git-receive-pack` 的 POST 上传被挂起（GET 不受影响）。解法：`git -c http.version=HTTP/1.1 push`；推荐固化到全局 `git config --global http.version HTTP/1.1`（回退：`git config --global --unset http.version`）。已实测：同一仓库强制 HTTP/1.1 后 2748 字节的包瞬间推送成功。 |
@@ -369,13 +373,14 @@ dotnet build --no-restore -p:UseSharedCompilation=false -p:EnableDefaultPageItem
 
 **交付时告知用户**：本沙箱无法完整 build/运行 WPF，最终构建在 VS 中做。
 
-## 七、模板文件清单（templates/ 下 20 个）
+## 七、模板文件清单（templates/ 下 21 个）
 
 | 文件 | 说明 |
 |---|---|
-| `__APP_NAME__.slnx` | 解决方案（4 项目在 `/src/`；两 props 挂在 `/解决方案项/` 下） |
+| `__APP_NAME__.slnx` | 解决方案（4 项目在 `/src/`；两 props + nuget.config 挂在 `/解决方案项/` 下） |
 | `Directory.Build.props` | `LangVersion` / `Nullable` / `ImplicitUsings` |
 | `Directory.Packages.props` | CPM，8 个包版本集中管理 |
+| `nuget.config` | NuGet 源：仅官方 `nuget.org`（详见第二节） |
 | `src/__APP_NAME__/__APP_NAME__.csproj` | WPF 应用，8 个包 + 3 个项目引用 |
 | `src/__APP_NAME__/App.xaml` / `.cs` | Prism 引导 + MD 主题 + Serilog/全局异常挂钩 |
 | `src/__APP_NAME__/App.GlobalException.cs` | 全局异常三钩子 + Serilog 配置（App 分部类） |
