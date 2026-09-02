@@ -17,7 +17,8 @@ public partial class App
     private static bool _isShowingDialog;
 
     /// <summary>
-    /// 配置 Serilog：文件 sink 按天滚动，保留 14 天。须在挂接异常钩子之前调用。
+    /// 配置 Serilog：文件 sink 输出到 exe 运行目录下 logs\，按天滚动，保留 14 天。须在挂接异常钩子之前调用。
+    /// 注意：如部署到无写权限目录（如 Program Files），Serilog 会写文件失败，需按部署场景改回 %LOCALAPPDATA%。
     /// </summary>
     public void ConfigureLogging()
     {
@@ -119,7 +120,6 @@ public partial class App
         }
     }
 
-    private static string LogDirectory => Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-        "__APP_NAME__", "logs");
+    // 日志目录 = exe 运行目录下 logs\（Serilog 自动创建；运行目录以 AppContext.BaseDirectory 为准）
+    private static string LogDirectory => Path.Combine(AppContext.BaseDirectory, "logs");
 }

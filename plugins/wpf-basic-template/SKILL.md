@@ -211,7 +211,7 @@ MainWindow mw = Container.Resolve<MainWindow>();
 
 - `OnStartup`：先 `ConfigureLogging()` 再 `AttachGlobalExceptionHandlers()`；`OnExit` 里 `Log.CloseAndFlush()`。
 - 三钩子：`DispatcherUnhandledException`（UI 线程，记 Error+弹窗+`Handled=true`）、`AppDomain.UnhandledException`（进程级，记 Fatal+弹窗+退出）、`TaskScheduler.UnobservedTaskException`（只记 Error+`SetObserved()`）。
-- 日志落盘 `%LOCALAPPDATA%\<AppName>\logs\app-YYYYMMdd.log`，按天滚动、保留 14 天、`shared:true`、UTF-8。
+- 日志落盘 **exe 运行目录** `logs\`（`AppContext.BaseDirectory\logs\app-YYYYMMdd.log`），按天滚动、保留 14 天、`shared:true`、UTF-8。运行目录语义 = 程序文件所在目录，不随启动方式（VS / 双击 / dotnet run）漂移；Serilog 自动创建 `logs\` 目录。**注意**：若部署到无写权限目录（如 `Program Files`），写文件会失败——按部署场景改回 `%LOCALAPPDATA%`（注释已写明）。
 - 弹窗防重复：`ShowDialogLock`（`System.Threading.Lock`）+ `_isShowingDialog`；后台线程自动调度回 UI。
 - **强约束：ViewModel 内不 try-catch，异常一律冒泡到全局收口**；异步加载用 `async void` 让异常直达 Dispatcher 钩子即时弹窗。
 - `Application.Current` 须写全限定 `System.Windows.Application.Current`（App 在 `<AppName>` 命名空间下会被解析成 `<AppName>.Application`）。
