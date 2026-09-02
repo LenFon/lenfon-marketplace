@@ -25,7 +25,7 @@ lenfon 的个人 WorkBuddy 用户市场，收录 WPF/.NET 桌面开发方向的�
 ### 方式二：让 AI 代装
 在 WorkBuddy 对话中直接发送下面这句即可（AI 会代为添加并启用插件）：
 
-> 请添加插件市场 https://github.com/LenFon/lenfon-marketplace，并安装、启用其中的 material-design-styles 与 wpf-basic-template。
+> 请添加插件市场 https://github.com/LenFon/lenfon-marketplace ，并安装、启用其中的 material-design-styles 与 wpf-basic-template。
 
 ### 方式三：CLI（可选，CodeBuddy Code 命令行）
 ```bash
