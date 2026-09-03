@@ -6,15 +6,24 @@
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <!-- MD3 默认主题：ColorAdjustment 提供 MD3 色调对比（Secondary Container / 色调海拔），Contrast 默认 Medium -->
-                <materialDesign:BundledTheme BaseTheme="Light"
-                                             PrimaryColor="DeepPurple"
-                                             SecondaryColor="Lime">
-                    <materialDesign:BundledTheme.ColorAdjustment>
-                        <materialDesign:ColorAdjustment Contrast="Medium" />
-                    </materialDesign:BundledTheme.ColorAdjustment>
-                </materialDesign:BundledTheme>
+                <!-- MD + MahApps 统一主题：按 PrimaryColor/SecondaryColor 自动生成 MahApps 画刷
+                     （AccentColorBrush / HighlightBrush 等），MetroWindow 等控件沿用 MD 配色，无需手工映射 -->
+                <materialDesign:MahAppsBundledTheme BaseTheme="Light"
+                                                    PrimaryColor="DeepPurple"
+                                                    SecondaryColor="Lime" />
+
+                <!-- MahApps.Metro 基础样式（MetroWindow 窗体必需） -->
+                <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Controls.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Fonts.xaml" />
+
+                <!-- Material Design 3 默认样式 -->
                 <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesign3.Defaults.xaml" />
+
+                <!-- Material Design × MahApps 桥接：聚合字典（Themes 文件夹下，引用时忽略大小写），
+                     一次性合并字体 / Flyout / TextBox / PasswordBox / RangeSlider / NumericUpDown /
+                     WindowCommands 等全部 MahApps 控件桥接样式 -->
+                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.MahApps;component/Themes/MaterialDesignTheme.MahApps.Defaults.xaml" />
+
                 <!-- 共享值转换器字典（全局可用，View 里用 StaticResource 引用） -->
                 <ResourceDictionary Source="pack://application:,,,/Resources/Converters.xaml" />
             </ResourceDictionary.MergedDictionaries>

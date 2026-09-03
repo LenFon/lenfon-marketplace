@@ -12,13 +12,13 @@ namespace __APP_NAME__.ViewModels;
 /// 运行时由 Prism 容器解析带 <c>IMessageService</c> 参数的主构造函数，
 /// 永远不会走到本文件的构造函数；该构造函数只填静态示例数据，不触碰服务。
 /// </remarks>
-public partial class MainViewViewModel
+public partial class MainViewModel
 {
     /// <summary>
     /// 仅供 XAML 设计器使用的无参构造函数。请勿在运行时调用。
     /// </summary>
     [Obsolete("设计器专用构造函数。运行时请使用带 IMessageService 的构造函数。", false)]
-    public MainViewViewModel()
+    public MainViewModel()
     {
         _messageService = null!;
 

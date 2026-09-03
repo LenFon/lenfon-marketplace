@@ -38,10 +38,12 @@ agent_created: true
 | **Prism.DryIoc** | 9.0.537 | **必选**，版本必须与 Prism.Wpf 一致 |
 | CommunityToolkit.Mvvm | 8.4.2 | 源生成器 MVVM |
 | MaterialDesignThemes | 5.3.2 | 与 .MahApps 严格同版本 |
-| MaterialDesignThemes.MahApps | 5.3.2 | 已传递包含 MahApps.Metro |
+| MaterialDesignThemes.MahApps | 5.3.2 | MD × MahApps 桥接字典（MaterialDesignTheme.MahApps.Defaults.xaml），版本必须与 MaterialDesignThemes 一致 |
+| **MahApps.Metro** | 2.4.11 | MetroWindow 窗口框架（Shell 改用 MetroWindow）；Styles/Controls.xaml + Styles/Fonts.xaml 须在 App.xaml 手动合并（见 §四） |
 | Serilog | 4.4.0 | 结构化日志（WPF 应用默认日志方案） |
 | Serilog.Sinks.File | 7.0.0 | 文件 sink，按天滚动 |
 | **ValueConverters** | 3.1.22 | 常用 IValueConverter 集合（thomasgalliker，开源），转换器首选来源 |
+| **Microsoft.Xaml.Behaviors.Wpf** | 1.1.158 | XAML 行为宿主（`Interaction.Triggers` / `EventTrigger` / `InvokeCommandAction`）；优先使用其自带的 `i:InvokeCommandAction` 在事件触发时执行 ViewModel 命令（不依赖 Prism 的 `InvokeCommandAction`） |
 
 建新项目时**先查 nuget.org 拿最新稳定版**再改 `Directory.Packages.props`，勿沿用旧版本号。
 
@@ -203,8 +205,8 @@ MainView mv = Container.Resolve<MainView>();
 
 - `App.xaml` 根元素必须是 `prism:PrismApplication`，**不写 `StartupUri`**、不在 `App()` 里调 `Initialize()`（基类自动完成）。
 - `CreateShell()` 在 Prism 9 返回 `Window`：`protected override Window CreateShell()`。
-- **Shell 自带视图模型**：`Shell.xaml` 设 `prism:ViewModelLocator.AutoWireViewModel="True"`，由 Prism 按命名约定自动装配 `ShellViewModel`（Views.Shell -> ViewModels.ShellViewModel），承载应用级状态（标题 / 状态栏等）；`ShellViewModel` 依赖 `IRegionManager`（DI 注入），提供 `ShellViewModel.Design.cs` 设计器无参构造，XAML 直接 `d:DesignInstance IsDesignTimeCreatable=True`。
-- 主内容通过 `ContentRegion` 区域导航加载 `MainView`：`RegisterTypes` 里 `containerRegistry.RegisterForNavigation<MainView>()`，`OnInitialized` 里 `regionManager.RequestNavigate("ContentRegion", "MainView")`。
+- **Shell 自带视图模型**：`Shell.xaml` 设 `prism:ViewModelLocator.AutoWireViewModel="True"`，由 Prism 按命名约定自动装配 `ShellViewModel`（Views.Shell -> ViewModels.ShellViewModel），承载应用级状态（标题 / 子标题 / 状态栏）；`ShellViewModel` 以 `[ObservableProperty]` 分部属性暴露 `Title`/`SubTitle`/`StatusText`，Shell 根元素改用 MahApps.Metro 的 `MetroWindow`（`xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"`），标题栏通过 `TitleTemplate` 显示 `Title`（主）+ `SubTitle`（次）；`App.xaml` 用 `materialDesign:MahAppsBundledTheme`（BaseTheme=Light、PrimaryColor=DeepPurple、SecondaryColor=Lime）按 MD 调色板自动生成 MahApps 画刷（AccentColorBrush/HighlightBrush 等，供 MetroWindow 的 `GlowBrush` 等沿用 MD 配色），并合并 MahApps `Styles/Controls.xaml`+`Styles/Fonts.xaml`、`MaterialDesign3.Defaults.xaml` 与 `MaterialDesignThemes.MahApps` 桥接聚合字典 `MaterialDesignTheme.MahApps.Defaults.xaml`（Themes 文件夹下、引用忽略大小写，一次性桥接全部 MahApps 控件样式），无需手工映射 MahApps 画刷；`ShellViewModel` **不实现 `INavigationAware`**（Shell 是 `CreateShell` 根窗口、非区域导航目标，其 `OnNavigatedTo` 不会自动触发），`依赖 IRegionManager`（DI 注入），提供 `ShellViewModel.Design.cs` 设计器无参构造，XAML 直接 `d:DesignInstance IsDesignTimeCreatable=True`。初始导航（加载 `MainView` 到 `ContentRegion`）由 `ShellViewModel.LoadedCommand` 经 `Shell.xaml` 的 `Interaction.Triggers` 在窗口 `Loaded` 后处理，App 无需重写 `OnInitialized`。
+- 主内容通过 `ContentRegion` 区域导航加载 `MainView`：`RegisterTypes` 里 `containerRegistry.RegisterForNavigation<MainView>()`；`Shell.xaml` 用 `i:Interaction.Triggers` + `i:EventTrigger EventName="Loaded"` + `i:InvokeCommandAction`（Microsoft.Xaml.Behaviors.Wpf 自带，优先于 Prism 的 `InvokeCommandAction`）`Command="{Binding LoadedCommand}"` 在窗口 `Loaded` 后执行 `ShellViewModel.LoadedCommand`，即 `regionManager.RequestNavigate("ContentRegion", "MainView")`（需 `Microsoft.Xaml.Behaviors.Wpf` 包提供 `Interaction.Triggers` 宿主）。
 - 契约注册在 `RegisterTypes`：`containerRegistry.RegisterSingleton<IMessageService, MessageService>();`
 
 ### 全局异常处理 + Serilog（模板内建）
@@ -229,7 +231,7 @@ xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 xmlns:vm="clr-namespace:<AppName>.ViewModels"
 mc:Ignorable="d"
 d:DesignWidth="880" d:DesignHeight="540"
-d:DataContext="{d:DesignInstance Type=vm:MainViewViewModel, IsDesignTimeCreatable=True}"
+d:DataContext="{d:DesignInstance Type=vm:MainViewModel, IsDesignTimeCreatable=True}"
 ```
 
 - `mc:Ignorable="d"` 必须加；属性值写一行。
@@ -244,54 +246,65 @@ d:DataContext="{d:DesignInstance Type=vm:MainViewViewModel, IsDesignTimeCreatabl
 
 ### Material Design 主题（默认 Material Design 3）
 
-**设计语言默认 MD3**，MD2 仅作遗留兼容（见下方「切换到 MD2」）。MD3 不另写控件，而是复用 MD2 核心控件库 `MaterialDesignTheme.*`，再叠加 `MaterialDesign3.Defaults.xaml` 映射 MD3 外观，并通过 `BundledTheme.ColorAdjustment` 注入 MD3 色调对比（Secondary Container / 色调海拔）。
+**设计语言默认 MD3**，MD2 仅作遗留兼容（见下方「切换到 MD2」）。MD3 复用 MD2 核心控件库 `MaterialDesignTheme.*`，再叠加 `MaterialDesign3.Defaults.xaml` 映射 MD3 外观。
 
-`App.xaml` 合并 `BundledTheme`（带 `ColorAdjustment` 子元素）+ `MaterialDesign3.Defaults.xaml`：
+`App.xaml` 用 `MahAppsBundledTheme`（同时生成 MD 调色板与 MahApps 画刷，Shell 的 MetroWindow 沿用 `AccentColorBrush`/`GlowBrush`），并手动合并 MahApps 基础样式 + MD×MahApps 桥接字典（模板现成写法，照抄即可）：
 
 ```xml
-<materialDesign:BundledTheme BaseTheme="Light"
-                             PrimaryColor="DeepPurple"
-                             SecondaryColor="Lime">
-    <materialDesign:BundledTheme.ColorAdjustment>
-        <materialDesign:ColorAdjustment Contrast="Medium" />
-    </materialDesign:BundledTheme.ColorAdjustment>
-</materialDesign:BundledTheme>
+<materialDesign:MahAppsBundledTheme BaseTheme="Light"
+                                    PrimaryColor="DeepPurple"
+                                    SecondaryColor="Lime" />
+
+<!-- MahApps.Metro 基础样式（MetroWindow 窗体必需），必须手动合并 -->
+<ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Controls.xaml" />
+<ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Fonts.xaml" />
+
+<!-- Material Design 3 默认样式 -->
 <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesign3.Defaults.xaml" />
+
+<!-- Material Design × MahApps 桥接：聚合字典，一次性桥接全部 MahApps 控件样式到 MD 配色 -->
+<ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.MahApps;component/Themes/MaterialDesignTheme.MahApps.Defaults.xaml" />
 ```
 
-- **`ColorAdjustment` 属性**（已验证，v5.3.2）：`materialDesign:ColorAdjustment` 有三个属性 —— `Contrast`（`None`/`Low`/`Medium`/`High`，默认 `Medium`）、`DesiredContrastRatio`（`float`，默认 `4.5f`）、`Colors`（`ColorSelection`，默认 `All`，可取 `Primary`/`Secondary`/`Neutral`/`NeutralVariant`）。它驱动 MD3 的「色调容器 / 海拔阴影」对比，是 MD3 与 MD2 观感差异的关键开关，**默认 `Contrast="Medium"` 即可**。
-- **MahApps 集成包靠 dll 内 Generic 主题自动生效，不要手动合并其 XAML**。
+- **`MahAppsBundledTheme`**：`BundledTheme` 的 MahApps 变体，按 `PrimaryColor`/`SecondaryColor` 自动生成 MahApps 画刷（`AccentColorBrush`/`HighlightBrush` 等），无需手工映射。`ColorAdjustment` 子元素（MD3 色调对比开关，属性 `Contrast`/`DesiredContrastRatio`/`Colors`）仍可作为可选子元素追加以微调 MD3 对比度；模板采用最简形式（等效默认 `Contrast="Medium"`）。
+- **MahApps 基础样式必须手动合并**：`MahApps.Metro` 的 `Styles/Controls.xaml` + `Styles/Fonts.xaml` 需显式合并（MetroWindow 依赖）；`MaterialDesignThemes.MahApps` 桥接字典会把 MD 配色套到 MahApps 控件，但**不会**替代上面两个基础字典的合并。
 - 写 XAML 前先加载 `material-design-styles` 技能查命名样式清单（见下方「技能依赖」）。MD3 下基础控件（Button/TextBox/ListBox 等）命名样式与 MD2 共用 `MaterialDesignTheme.*` 键，可直接 `StaticResource` 引用；仅 MD3 专属组件/排版（导航栏、导航抽屉、导航轨、MD3 排版等 28 个 `MaterialDesign3.*` 键）需显式引用对应 `MaterialDesign3.*` 样式。
 
 #### 切换到 MD2（仅遗留兼容）
 
-把上面两行换成 `MaterialDesign2.Defaults.xaml` 并去掉 `ColorAdjustment` 子元素即可（`BundledTheme` 仅留 `BaseTheme`/`PrimaryColor`/`SecondaryColor`）。新项目一律用 MD3。
+把 `MaterialDesign3.Defaults.xaml` 换成 `MaterialDesign2.Defaults.xaml` 即可（`MahAppsBundledTheme` 仅留 `BaseTheme`/`PrimaryColor`/`SecondaryColor`，其余 MahApps 基础字典与桥接字典保持不变）。新项目一律用 MD3。
 
 ```xml
-<materialDesign:BundledTheme BaseTheme="Light"
-                             PrimaryColor="DeepPurple"
-                             SecondaryColor="Lime" />
+<materialDesign:MahAppsBundledTheme BaseTheme="Light"
+                                    PrimaryColor="DeepPurple"
+                                    SecondaryColor="Lime" />
+<ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Controls.xaml" />
+<ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Fonts.xaml" />
 <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesign2.Defaults.xaml" />
+<ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.MahApps;component/Themes/MaterialDesignTheme.MahApps.Defaults.xaml" />
 ```
 
 ### 技能依赖：material-design-styles（强制）
 
-本脚手架的 Material Design 命名样式清单来自 `material-design-styles` 技能。**每次新建 / 修改 XAML 前，先确认该技能已安装；未安装则按下方命令从 GitHub 安装（默认用户级）**：
+本脚手架的 Material Design 命名样式清单来自 `material-design-styles` 技能。**每次新建 / 修改 XAML 前，先确认该技能已安装；未安装则按下方说明从市场 `lenfon-marketplace` 安装（不再走 GitHub clone）**：
 
 ```bash
-# 检查是否已安装（Windows 用户级技能目录）
-if [ -d "$USERPROFILE/.workbuddy/skills/material-design-styles" ]; then
+# 检查是否已安装（优先市场路径，其次用户级技能目录）
+if [ -d "$USERPROFILE/.workbuddy/plugins/marketplaces/lenfon-marketplace/plugins/material-design-styles" ] || \
+   [ -d "$USERPROFILE/.workbuddy/skills/material-design-styles" ]; then
   echo "material-design-styles 已安装"
 else
-  git clone https://github.com/LenFon/material-design-styles.git \
-    "$USERPROFILE/.workbuddy/skills/material-design-styles"
+  echo "请在 WorkBuddy 中从市场 lenfon-marketplace 安装 material-design-styles 技能"
 fi
 ```
 
+安装方式（均来自市场 `lenfon-marketplace`，二选一）：
+- 对话中直接说「**从市场 lenfon-marketplace 安装 material-design-styles 技能**」，由 WorkBuddy 一键安装；
+- 或在左侧【技能】面板进入市场，搜索 `material-design-styles` 并安装。
+
 - 安装成功后用 Skill 工具加载 `material-design-styles` 再写 XAML。
-- 项目级共享场景：把目标路径改为 `<项目>/.workbuddy/skills/material-design-styles`（命令同上，仅换目标路径）。
 - **默认设计语言为 MD3**：命名样式选型优先取 `MaterialDesignTheme.*` 共用键（MD2/MD3 共享基础），MD3 专属组件用 `MaterialDesign3.*` 键；不要用 v4.x 旧键名（见 material-design-styles 技能「已废弃」清单）。
-- 源仓库：`https://github.com/LenFon/material-design-styles`。
+- 技能市场归属：`lenfon-marketplace`（上游源仓库 `https://github.com/LenFon/material-design-styles`，仅供溯源参考，安装请走市场）。
 
 ### 值转换器（强制）
 
@@ -381,19 +394,19 @@ dotnet build --no-restore -p:UseSharedCompilation=false -p:EnableDefaultPageItem
 |---|---|
 | `__APP_NAME__.slnx` | 解决方案（4 项目在 `/src/`；两 props + nuget.config 挂在 `/解决方案项/` 下） |
 | `Directory.Build.props` | `LangVersion` / `Nullable` / `ImplicitUsings` |
-| `Directory.Packages.props` | CPM，8 个包版本集中管理 |
+| `Directory.Packages.props` | CPM，10 个包版本集中管理 |
 | `nuget.config` | NuGet 源：仅官方 `nuget.org`（详见第二节） |
-| `src/__APP_NAME__/__APP_NAME__.csproj` | WPF 应用，8 个包 + 3 个项目引用 |
+| `src/__APP_NAME__/__APP_NAME__.csproj` | WPF 应用，10 个包 + 3 个项目引用 |
 | `src/__APP_NAME__/App.xaml` / `.cs` | Prism 引导 + MD 主题 + Serilog/全局异常挂钩 |
 | `src/__APP_NAME__/App.GlobalException.cs` | 全局异常三钩子 + Serilog 配置（App 分部类） |
 | `src/__APP_NAME__/AssemblyInfo.cs` | `SupportedOSPlatform` + `ThemeInfo` |
 | `src/__APP_NAME__/Resources/Converters.xaml` | 共享值转换器字典（App.xaml 全局合并，View 用 `StaticResource`） |
 | `src/__APP_NAME__/Views/Shell.xaml` / `.cs` | 主窗口（Shell），`AutoWireViewModel=True` 自动装配 `ShellViewModel`；含 `ContentRegion` + 状态栏 |
 | `src/__APP_NAME__/Views/MainView.xaml` / `.cs` | 主内容视图（区域导航加载到 `ContentRegion`） |
-| `src/__APP_NAME__/ViewModels/ShellViewModel.cs` | Shell 视图模型：应用级状态 + 实现 `IInitialize` 在 `Initialize()` 中导航加载 MainView；依赖 `IRegionManager`，配 `ShellViewModel.Design.cs` |
+| `src/__APP_NAME__/ViewModels/ShellViewModel.cs` | Shell 视图模型：应用级状态 + `[RelayCommand] LoadedCommand`（窗口 Loaded 后导航加载 MainView）；依赖 `IRegionManager`，配 `ShellViewModel.Design.cs` |
 | `src/__APP_NAME__/ViewModels/ShellViewModel.Design.cs` | 设计器专用无参构造（对应 `IRegionManager` 依赖） |
-| `src/__APP_NAME__/ViewModels/MainViewViewModel.cs` | `[ObservableProperty]` 全量分部属性 + RelayCommand 示例；实现 `INavigationAware`（导航页 ViewModel 标准做法） |
-| `src/__APP_NAME__/ViewModels/MainViewViewModel.Design.cs` | 设计器专用无参构造 + 示例数据 |
+| `src/__APP_NAME__/ViewModels/MainViewModel.cs` | `[ObservableProperty]` 全量分部属性 + RelayCommand 示例；实现 `INavigationAware`（导航页 ViewModel 标准做法） |
+| `src/__APP_NAME__/ViewModels/MainViewModel.Design.cs` | 设计器专用无参构造 + 示例数据 |
 | `src/__APP_NAME__.Domain/*` | csproj + `MessageItem.cs` + `MessageItem.Impl.cs` |
 | `src/__APP_NAME__.Application/*` | csproj + `IMessageService.cs` |
 | `src/__APP_NAME__.Infrastructure/*` | csproj + `MessageService.cs` |

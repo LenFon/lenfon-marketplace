@@ -46,7 +46,7 @@ public partial class App : PrismApplication
     {
         containerRegistry.RegisterSingleton<IMessageService, MessageService>();
         // 注册 MainView 为可导航视图（导航 URI = "MainView"）；
-        // 实际导航由 ShellViewModel.Initialize() 在 Shell 就绪后发起。
+        // 实际导航由 Shell.xaml 的 Interaction.Triggers 在窗口 Loaded 后触发 ShellViewModel.LoadedCommand 发起。
         containerRegistry.RegisterForNavigation<MainView>();
     }
 }

@@ -9,29 +9,18 @@
              mc:Ignorable="d"
              d:DesignWidth="880"
              d:DesignHeight="540"
-             d:DataContext="{d:DesignInstance Type=vm:MainViewViewModel, IsDesignTimeCreatable=True}"
+             d:DataContext="{d:DesignInstance Type=vm:MainViewModel, IsDesignTimeCreatable=True}"
              prism:ViewModelLocator.AutoWireViewModel="True">
 
     <Grid Margin="24">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <!-- 标题区 -->
-        <StackPanel Grid.Row="0" Margin="0,0,0,20">
-            <TextBlock Text="{Binding Title}"
-                       FontSize="22"
-                       FontWeight="SemiBold" />
-            <TextBlock Text="{Binding Subtitle}"
-                       Margin="0,6,0,0"
-                       Opacity="0.65" />
-        </StackPanel>
-
         <!-- 输入区 -->
-        <DockPanel Grid.Row="1" Margin="0,0,0,16">
+        <DockPanel Grid.Row="0" Margin="0,0,0,16">
             <Button DockPanel.Dock="Right"
                     Margin="12,0,0,0"
                     Padding="24,8"
@@ -46,7 +35,7 @@
         </DockPanel>
 
         <!-- 消息列表 -->
-        <ListBox Grid.Row="2"
+        <ListBox Grid.Row="1"
                  ItemsSource="{Binding Messages}"
                  SelectedItem="{Binding SelectedMessage}"
                  Padding="4">
@@ -64,7 +53,7 @@
         </ListBox>
 
         <!-- 底部状态栏 -->
-        <DockPanel Grid.Row="3" Margin="0,16,0,0">
+        <DockPanel Grid.Row="2" Margin="0,16,0,0">
             <TextBlock DockPanel.Dock="Left"
                        VerticalAlignment="Center"
                        Opacity="0.7"

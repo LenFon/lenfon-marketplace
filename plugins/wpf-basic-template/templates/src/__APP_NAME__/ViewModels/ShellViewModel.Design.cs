@@ -19,7 +19,8 @@ public partial class ShellViewModel
     [Obsolete("设计器专用构造函数。运行时请使用带 IRegionManager 的构造函数。", false)]
     public ShellViewModel()
     {
-        AppTitle = "__APP_NAME__";
+        Title = "__APP_NAME__";
+        SubTitle = "Prism 9 + Material Design 5（设计器预览）";
         StatusText = "就绪（设计器预览）";
     }
 }

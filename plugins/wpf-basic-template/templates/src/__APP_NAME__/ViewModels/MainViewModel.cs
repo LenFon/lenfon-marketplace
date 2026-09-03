@@ -9,7 +9,7 @@ namespace __APP_NAME__.ViewModels;
 
 /// <summary>
 /// 主内容视图模型。由 Prism 的 ViewModelLocator 按命名约定自动装配：
-/// Views.MainView -> ViewModels.MainViewViewModel。
+/// Views.MainView -> ViewModels.MainViewModel。
 /// </summary>
 /// <remarks>
 /// 全部可通知属性均使用 C# 13 <b>分部属性（partial properties）</b>：
@@ -17,29 +17,17 @@ namespace __APP_NAME__.ViewModels;
 /// 由 CommunityToolkit.Mvvm 源生成器产出实现声明（SetProperty + 双向通知），
 /// 因此不再需要手工维护 _xxx 支持字段。
 /// </remarks>
-public partial class MainViewViewModel : ObservableObject, INavigationAware
+public partial class MainViewModel : ObservableObject, INavigationAware
 {
     private readonly IMessageService _messageService;
 
-    public MainViewViewModel(IMessageService messageService)
+    public MainViewModel(IMessageService messageService)
     {
         _messageService = messageService;
 
         Messages.Add(new MessageItem(_messageService.GetWelcomeMessage(), DateTime.Now));
         UpdateStatus();
     }
-
-    /// <summary>
-    /// 窗口标题。
-    /// </summary>
-    [ObservableProperty]
-    public partial string Title { get; set; } = "__APP_NAME__";
-
-    /// <summary>
-    /// 副标题。
-    /// </summary>
-    [ObservableProperty]
-    public partial string Subtitle { get; set; } = "Prism 9 + Material Design 5 + CommunityToolkit.Mvvm 8";
 
     /// <summary>
     /// 输入框内容；变化时自动刷新 AddCommand 的可用状态。

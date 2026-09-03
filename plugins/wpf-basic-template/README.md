@@ -1,6 +1,6 @@
 # wpf-basic-template
 
-WorkBuddy 技能：**WPF 标准解决方案脚手架**（含 21 个可拷贝模板文件）。
+WorkBuddy 技能：**WPF 标准解决方案脚手架**（含 25 个可拷贝模板文件）。
 
 基于真实项目 WeatherApp 全链路验证，一键生成 Prism 9 + Material Design 5（默认 MD3 样式）+ CommunityToolkit.Mvvm 的 WPF 解决方案骨架。
 
@@ -11,7 +11,7 @@ WorkBuddy 技能：**WPF 标准解决方案脚手架**（含 21 个可拷贝模�
 | 框架 | Prism 9（模块化 + DI + Region 导航）+ Material Design 5（**默认 MD3 样式**，MaterialDesignThemes） |
 | MVVM | CommunityToolkit.Mvvm 8.4.2，**凡 `[ObservableProperty]` 一律 C# 13 分部属性**（`[ObservableProperty] public partial string Title { get; set; }`），禁私有字段老写法，含生成后自检脚本 |
 | 结构 | src/ 四层：`App`（组合根）→ `Infrastructure`（实现）→ `Application`（契约）→ `Domain`（领域模型） |
-| 包管理 | 中央包管理（CPM）：`Directory.Packages.props` 集中 8 个包版本 + `nuget.config`（仅官方源，含 `<clear />`） |
+| 包管理 | 中央包管理（CPM）：`Directory.Packages.props` 集中 10 个包版本 + `nuget.config`（仅官方源，含 `<clear />`） |
 | 解决方案 | `.slnx`（XML 格式），`Directory.Build.props` / `Directory.Packages.props` / `nuget.config` 挂在「解决方案项」文件夹 |
 | 日志 | Serilog + Serilog.Sinks.File，全局异常三钩子 |
 | 设计时 | 所有 View 根元素强制 `d:DataContext` 设计时绑定（含设计器专用无参构造分部类） |
@@ -46,7 +46,7 @@ WorkBuddy 会自动将仓库克隆到技能目录 `~/.workbuddy/skills/wpf-basic
 
 或手动使用：
 
-1. 将 `templates/` 下 21 个文件拷入新项目目录（`__APP_NAME__` 占位符全局替换为实际项目名）
+1. 将 `templates/` 下 25 个文件拷入新项目目录（`__APP_NAME__` 占位符全局替换为实际项目名）
 2. 生成 slnx：`dotnet new sln -n <名称> --format slnx`
 3. `dotnet restore && dotnet build --no-restore`
 
@@ -56,7 +56,7 @@ WorkBuddy 会自动将仓库克隆到技能目录 `~/.workbuddy/skills/wpf-basic
 templates/
 ├── __APP_NAME__.slnx                 # 解决方案（4 项目在 /src/）
 ├── Directory.Build.props             # LangVersion / Nullable / ImplicitUsings
-├── Directory.Packages.props          # CPM，8 个包版本集中管理
+├── Directory.Packages.props          # CPM，10 个包版本集中管理
 ├── nuget.config                      # NuGet 源：仅官方源 + <clear />（还原可复现）
 └── src/
     ├── __APP_NAME__/                 # WPF 应用（Prism 引导 + MD3 主题 + Serilog）
@@ -64,7 +64,7 @@ templates/
     │   ├── App.GlobalException.cs    # 全局异常三钩子
     │   ├── Views/Shell.xaml(.cs)     # 主窗口（Shell）：AutoWireViewModel=True 注入 ShellViewModel，含 ContentRegion + 状态栏
     │   ├── Views/MainView.xaml(.cs)  # 主内容视图（区域导航加载到 ContentRegion）
-    │   └── ViewModels/               # ShellViewModel（IRegionManager 依赖，配 ShellViewModel.Design.cs，实现 IInitialize 导航）+ MainViewViewModel（分部属性 + RelayCommand + INavigationAware + 设计器构造）
+    │   └── ViewModels/               # ShellViewModel（[RelayCommand] LoadedCommand 导航 MainView，由 Shell.xaml 的 Interaction.Triggers 在 Loaded 时触发，依赖 IRegionManager，配 ShellViewModel.Design.cs，含 Title/SubTitle/StatusText）+ MainViewModel（分部属性 + RelayCommand + INavigationAware + 设计器构造）
     ├── __APP_NAME__.Domain/          # 领域模型（MessageItem 示例）
     ├── __APP_NAME__.Application/     # 契约（IMessageService 示例）
     └── __APP_NAME__.Infrastructure/  # 实现（MessageService 示例）
