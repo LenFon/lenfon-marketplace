@@ -1,7 +1,7 @@
 {
   "name": "lenfon-marketplace",
  "description": "lenfon 的个人 WorkBuddy 用户市场，收录 WPF/.NET 桌面开发技能——material-design-styles（MaterialDesignInXamlToolkit 样式参考与控件选型指南）、wpf-basic-template（Prism 9 + Material Design 5 标准化 WPF 脚手架）、prism-assistant（Prism for WPF 使用参考助手：MVVM/导航/模块/对话框/事件聚合真实用法与避坑清单），持续扩充。源码托管于 GitHub：https://github.com/LenFon/lenfon-marketplace，可直接在 WorkBuddy 中按该地址安装。",
- "description_en": "lenfon's personal WorkBuddy marketplace hosting WPF/.NET desktop development skills — material-design-styles (MaterialDesignInXamlToolkit style reference & control pick guide) and wpf-basic-template (standardized WPF scaffold with Prism 9 + Material Design 5) — and keeps growing. Source is hosted on GitHub: https://github.com/LenFon/lenfon-marketplace; installable directly in WorkBuddy from that address.",
+ "description_en": "lenfon's personal WorkBuddy marketplace hosting WPF/.NET desktop development skills — material-design-styles (MaterialDesignInXamlToolkit style reference & control pick guide), wpf-basic-template (standardized WPF scaffold with Prism 9 + Material Design 5), and prism-assistant (Prism for WPF usage reference: MVVM / navigation / modules / dialogs / event aggregation with real-world patterns and pitfalls) — and keeps growing. Source is hosted on GitHub: https://github.com/LenFon/lenfon-marketplace; installable directly in WorkBuddy from that address.",
   "owner": {
     "name": "lenfon",
     "email": ""

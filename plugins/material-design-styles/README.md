@@ -19,11 +19,14 @@ WorkBuddy 技能：MaterialDesignInXamlToolkit（Material Design In XAML Toolkit
 
 ```
 material-design-styles/
-├── SKILL.md                       # 技能说明（锁定版本、用法、版本要点）
+├── SKILL.md                       # 技能入口（选型流程、版本状态、架构要点）
 ├── references/
-│   └── MD样式分类清单.md           # 完整命名样式清单（按 MD2 / MD3 / 已废弃分组）
-├── LICENSE                        # MIT 许可证
+│   ├── MD样式分类清单.md           # 完整命名样式清单（按 MD2 / MD3 / 已废弃分组）
+│   └── 维护与月度更新.md           # 月度版本校验与清单更新流程
+└── ../LICENSE                     # MIT 许可证（市场仓库根）
 ```
+
+遵循 CodeBuddy 技能的渐进式披露设计：`SKILL.md` 只留选型流程与版本状态，长清单与维护流程按需从 `references/` 加载。
 
 ## 安装方式
 

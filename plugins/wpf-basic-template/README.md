@@ -42,14 +42,14 @@ WorkBuddy 技能：**WPF 标准解决方案脚手架**（含 25 个可拷贝模�
 
 或手动使用：
 
-1. 将 `templates/` 下 25 个文件拷入新项目目录（`__APP_NAME__` 占位符全局替换为实际项目名）
+1. 将 `assets/` 下 25 个文件拷入新项目目录（`__APP_NAME__` 占位符全局替换为实际项目名）
 2. 生成 slnx：`dotnet new sln -n <名称> --format slnx`
 3. `dotnet restore && dotnet build --no-restore`
 
 ## 模板结构
 
 ```
-templates/
+assets/
 ├── __APP_NAME__.slnx                 # 解决方案（4 项目在 /src/）
 ├── Directory.Build.props             # LangVersion / Nullable / ImplicitUsings
 ├── Directory.Packages.props          # CPM，10 个包版本集中管理
@@ -66,7 +66,20 @@ templates/
     └── __APP_NAME__.Infrastructure/  # 实现（MessageService 示例）
 ```
 
-## 坑位清单（已沉淀进 SKILL.md）
+## 参考文档（references/，按需加载）
+
+`SKILL.md` 只保留快速流程与强制约定速查，详细规则按主题下沉：
+
+| 文件 | 内容 |
+|---|---|
+| `references/01-project-layout.md` | 目录布局、文件编码、包组合、NuGet 源、CPM |
+| `references/02-code-style.md` | 分部属性 + 自检脚本、XML 注释、单行注释位置、var、线程锁 |
+| `references/03-prism-and-ui.md` | Prism 引导、Shell 导航、全局异常 + Serilog、MD3 主题、设计时绑定、值转换器 |
+| `references/04-pitfalls.md` | 已踩坑位与解法 |
+| `references/05-build-verification.md` | 编译 0 错要求 + 本机 DLP 环境绕行验证方案 |
+| `references/06-assets-manifest.md` | 模板文件清单 + 技能维护约定 |
+
+## 坑位清单（已沉淀进 references/04-pitfalls.md）
 
 - Prism 9 命名空间重组：Region 类型在 `Prism.Navigation.Regions`，`NavigationParameters` 在 `Prism.Navigation`
 - Material Design 5 无 `ProgressRing` 控件，用标准 `ProgressBar` + `MaterialDesignCircularProgressBar` 样式
