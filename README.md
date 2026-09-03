@@ -29,7 +29,31 @@ lenfon 的个人 WorkBuddy 用户市场，收录 WPF/.NET 桌面开发方向的�
 | 渐进式披露 | 元数据常驻 → SKILL.md 正文（<5k 词）→ references 按需加载 |
 | 避免重复 | 长清单、维护流程、坑位明细一律下沉 `references/`，SKILL.md 只留流程 + 速查表 + 资源索引 |
 
-## 在 WorkBuddy 中安装
+## 添加市场与安装插件
+
+遵循插件市场规范：先 `add` 市场，再 `install` 具体插件。
+
+### 命令行
+
+```bash
+/plugin marketplace add LenFon/lenfon-marketplace      # 添加市场（owner/repo 简写）
+/plugin install wpf-basic-template@lenfon-marketplace  # 安装插件（默认用户作用域）
+/plugin marketplace update lenfon-marketplace          # 刷新插件列表
+/reload-plugins                                        # 不重启即生效
+```
+
+等价写法与其它来源形式：
+
+```bash
+/plugin marketplace add https://github.com/LenFon/lenfon-marketplace   # Git URL
+/plugin marketplace add ./lenfon-marketplace                           # 本地目录（本仓库 clone 后）
+/plugin marketplace list                                               # 查看已配置市场
+/plugin marketplace remove lenfon-marketplace                          # 移除市场（会卸载其下插件）
+```
+
+安装作用域：默认**用户作用域**（全项目可用）；`--scope project` 写入 `.codebuddy/settings.json` 供协作者共用。
+
+### 对话方式
 
 在 WorkBuddy 对话中直接发送下面这句即可（AI 会代为添加并启用插件）：
 
@@ -37,7 +61,21 @@ lenfon 的个人 WorkBuddy 用户市场，收录 WPF/.NET 桌面开发方向的�
 
 如需仅安装部分插件，去掉不需要的插件名即可；也可直接描述需求（如「从市场 lenfon-marketplace 安装 prism-assistant 技能」），WorkBuddy 会自动从市场拉取并安装到用户级技能目录。
 
-**更新插件**：对话中再次发送市场安装指令即可拉取最新版；或进入市场目录执行 `git pull`。
+**更新插件**：对话中再次发送市场安装指令即可拉取最新版；或进入市场目录执行 `git pull`。插件安装后落在 `~/.workbuddy/plugins/cache/lenfon-marketplace/<插件>/<版本>/`，运行时只从该版本化快照加载。
+
+## 市场清单规范
+
+本市场遵循插件市场规范（https://www.codebuddy.ai/docs/zh/cli/plugin-marketplaces）：
+
+| 规范项 | 落实方式 |
+|---|---|
+| 清单位置 | 仓库根 `.codebuddy-plugin/marketplace.json`（GitHub / Git / 本地目录型市场的标准位置） |
+| 顶层必填 | `name`（kebab-case）+ `owner` + `plugins`；可选 `description`、`version` |
+| 插件条目必填 | `name` + `source` + `description`；`source` 为相对市场根的路径（`./plugins/<插件>`） |
+| 插件条目可选 | `version`、`author`、`homepage`、`repository`、`license`（SPDX）、`keywords`、`category`、`strict` |
+| 组件声明 | `skills` 指向插件目录（本市场每个插件一个技能，入口为 `SKILL.md`） |
+| 插件清单 | `strict: true`（默认）——每个插件目录都带 `.codebuddy-plugin/plugin.json`，marketplace 条目补充其元数据 |
+| 版本与更新 | 市场与插件各自带 `version`；第三方市场默认不自动更新，按需 `update` 或 `git pull` |
 
 ## 目录结构
 

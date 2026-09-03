@@ -4,13 +4,22 @@
   "description": "Prism for WPF 框架使用参考助手（基于官方 PrismLibrary/Prism 与 Prism-Samples-Wpf 示例归纳的 MVVM / 导航 / 模块 / 对话框 / 事件聚合真实用法与避坑清单）。",
   "author": {
     "name": "lenfon",
-    "email": ""
+    "url": "https://github.com/LenFon"
   },
-  "homepage": {
-    "url": "https://github.com/LenFon/lenfon-marketplace",
-    "type": "github"
-  },
+  "homepage": "https://github.com/LenFon/lenfon-marketplace",
+  "repository": "https://github.com/LenFon/lenfon-marketplace",
   "license": "MIT",
+  "keywords": [
+    "wpf",
+    "prism",
+    "mvvm",
+    "navigation",
+    "dialog",
+    "event-aggregator",
+    "dotnet",
+    "csharp"
+  ],
+  "category": "wpf",
   "skills": [
     "./SKILL.md"
   ]

@@ -4,13 +4,20 @@
   "description": "MaterialDesignInXamlToolkit 命名样式（x:Key）参考与 WPF 控件样式选型指南（锁定最新稳定版 v5.3.2），按 MD2 / MD3 分组收录 405 个唯一命名样式清单，覆盖按钮、输入框、卡片等控件变体。",
   "author": {
     "name": "lenfon",
-    "email": ""
+    "url": "https://github.com/LenFon"
   },
-  "homepage": {
-    "url": "https://github.com/LenFon/lenfon-marketplace",
-    "type": "github"
-  },
+  "homepage": "https://github.com/LenFon/lenfon-marketplace",
+  "repository": "https://github.com/LenFon/lenfon-marketplace",
   "license": "MIT",
+  "keywords": [
+    "wpf",
+    "xaml",
+    "material-design",
+    "styles",
+    "dotnet",
+    "csharp"
+  ],
+  "category": "wpf",
   "skills": [
     "./SKILL.md"
   ]
