@@ -62,7 +62,8 @@ templates/
     ├── __APP_NAME__/                 # WPF 应用（Prism 引导 + MD3 主题 + Serilog）
     │   ├── App.xaml(.cs)             # Prism + DI 容器
     │   ├── App.GlobalException.cs    # 全局异常三钩子
-    │   ├── Views/MainWindow.xaml(.cs)
+    │   ├── Views/Shell.xaml(.cs)     # 主窗口（导航容器，含 ContentRegion）
+    │   ├── Views/MainView.xaml(.cs)  # 主内容视图（区域导航加载）
     │   └── ViewModels/               # 分部属性 + RelayCommand + 设计器构造
     ├── __APP_NAME__.Domain/          # 领域模型（MessageItem 示例）
     ├── __APP_NAME__.Application/     # 契约（IMessageService 示例）

@@ -1,6 +1,7 @@
 using System.Windows;
 using Prism.DryIoc;
 using Prism.Ioc;
+using Prism.Navigation.Regions;
 using Serilog;
 using __APP_NAME__.Application.Services;
 using __APP_NAME__.Infrastructure.Services;
@@ -17,7 +18,7 @@ public partial class App : PrismApplication
     /// <summary>
     /// 创建主窗口（Shell）。
     /// </summary>
-    protected override Window CreateShell() => Container.Resolve<MainWindow>();
+    protected override Window CreateShell() => Container.Resolve<Shell>();
 
     /// <summary>
     /// 启动早期配置 Serilog 并挂接全局异常钩子（须在 Shell 创建前，见 App.GlobalException.cs）。
@@ -44,5 +45,17 @@ public partial class App : PrismApplication
     protected override void RegisterTypes(IContainerRegistry containerRegistry)
     {
         containerRegistry.RegisterSingleton<IMessageService, MessageService>();
+        // 注册 MainView 为可导航视图（导航 URI = "MainView"）
+        containerRegistry.RegisterForNavigation<MainView>();
+    }
+
+    /// <summary>
+    /// 初始化完成后，将 MainView 导航到 Shell 的 ContentRegion。
+    /// 须在 base.OnInitialized() 之后执行（Prism 先完成 Shell 与区域注册）。
+    /// </summary>
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        Container.Resolve<IRegionManager>().RequestNavigate("ContentRegion", "MainView");
     }
 }

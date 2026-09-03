@@ -227,7 +227,7 @@ xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 xmlns:vm="clr-namespace:<AppName>.ViewModels"
 mc:Ignorable="d"
 d:DesignWidth="880" d:DesignHeight="540"
-d:DataContext="{d:DesignInstance Type=vm:MainWindowViewModel, IsDesignTimeCreatable=True}"
+d:DataContext="{d:DesignInstance Type=vm:MainViewViewModel, IsDesignTimeCreatable=True}"
 ```
 
 - `mc:Ignorable="d"` 必须加；属性值写一行。
@@ -354,7 +354,7 @@ fi
 4. WPF 项目注入 `Stubs.cs`，提供 XAML 编译器本该生成的 `InitializeComponent()`、`Main()`，及 `[assembly: SupportedOSPlatform("windows7.0")]`。
 5. `dotnet restore` → `dotnet build --no-restore -p:UseSharedCompilation=false`。
 
-**XAML 侧**不必绕：只要 MarkupCompile 不报 MC 错、且 `obj/**/App.g.cs`、`Views/MainWindow.g.cs` 已产出，即说明 XAML 语法与 xmlns 类型引用通过。
+**XAML 侧**不必绕：只要 MarkupCompile 不报 MC 错、且 `obj/**/App.g.cs`、`Views/Shell.g.cs`、`Views/MainView.g.cs` 已产出，即说明 XAML 语法与 xmlns 类型引用通过。
 
 **补充：WPF 项目的 C# 代码也要单独验证**（上述第 5 步会因 `.g.cs` 密文停编，VM/App 等 C# 没编译到）。追加一轮：
 

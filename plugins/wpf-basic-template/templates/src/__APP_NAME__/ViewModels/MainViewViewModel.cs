@@ -7,8 +7,8 @@ using __APP_NAME__.Application.Services;
 namespace __APP_NAME__.ViewModels;
 
 /// <summary>
-/// 主窗口视图模型。由 Prism 的 ViewModelLocator 按命名约定自动装配：
-/// Views.MainWindow -> ViewModels.MainWindowViewModel。
+/// 主内容视图模型。由 Prism 的 ViewModelLocator 按命名约定自动装配：
+/// Views.MainView -> ViewModels.MainViewViewModel。
 /// </summary>
 /// <remarks>
 /// 全部可通知属性均使用 C# 13 <b>分部属性（partial properties）</b>：
@@ -16,11 +16,11 @@ namespace __APP_NAME__.ViewModels;
 /// 由 CommunityToolkit.Mvvm 源生成器产出实现声明（SetProperty + 双向通知），
 /// 因此不再需要手工维护 _xxx 支持字段。
 /// </remarks>
-public partial class MainWindowViewModel : ObservableObject
+public partial class MainViewViewModel : ObservableObject
 {
     private readonly IMessageService _messageService;
 
-    public MainWindowViewModel(IMessageService messageService)
+    public MainViewViewModel(IMessageService messageService)
     {
         _messageService = messageService;
 
