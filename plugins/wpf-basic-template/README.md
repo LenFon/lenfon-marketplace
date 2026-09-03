@@ -17,21 +17,20 @@ WorkBuddy 技能：**WPF 标准解决方案脚手架**（含 25 个可拷贝模�
 | 设计时 | 所有 View 根元素强制 `d:DataContext` 设计时绑定（含设计器专用无参构造分部类） |
 | 质量 | 两轮编译验证 0 错 0 警（XAML 侧 + 纯 C# 侧） |
 
-## 安装方式（通过 lenfon-marketplace 市场安装）
+## 安装方式
 
-本技能收录于用户市场 **lenfon-marketplace**（GitHub 仓库 `https://github.com/LenFon/lenfon-marketplace`），推荐通过 WorkBuddy 市场一键安装：
+本技能收录于用户市场 **lenfon-marketplace**（GitHub 仓库 `https://github.com/LenFon/lenfon-marketplace`），安装方式如下：
 
 1. 在 WorkBuddy 对话中发送安装指令，例如：
 
    > 请添加插件市场 https://github.com/LenFon/lenfon-marketplace ，并安装、启用其中的 wpf-basic-template 技能。
 
    或直接描述需求（如"从市场 lenfon-marketplace 安装 wpf-basic-template 技能"），WorkBuddy 会自动从市场拉取并安装到用户级技能目录。
-2. 重启 WorkBuddy（或新开会话）使技能生效。
-3. 在左侧【技能】面板可看到 `wpf-basic-template`，对话输入「用 wpf-basic-template 技能新建一个 WPF 项目」即可使用。
+2. 在左侧【技能】面板可看到 `wpf-basic-template`。
 
 **更新技能**：对话中再次发送市场安装指令即可拉取最新版（或进入技能目录执行 `git pull`）。
 
-> **说明**：安装来源为市场仓库 `https://github.com/LenFon/lenfon-marketplace`（插件位于其 `plugins/wpf-basic-template` 子目录），不再使用独立的 `wpf-basic-template` 仓库地址。
+> **说明**：安装来源为市场仓库 `https://github.com/LenFon/lenfon-marketplace`（插件位于其 `plugins/wpf-basic-template` 子目录）。
 
 ## 使用方式
 

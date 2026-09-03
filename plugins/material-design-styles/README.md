@@ -23,43 +23,22 @@ material-design-styles/
 ├── references/
 │   └── MD样式分类清单.md           # 完整命名样式清单（按 MD2 / MD3 / 已废弃分组）
 ├── LICENSE                        # MIT 许可证
-└── .gitignore
 ```
 
 ## 安装方式
 
-本技能收录于用户市场 **lenfon-marketplace**（GitHub 仓库 `https://github.com/LenFon/lenfon-marketplace`），推荐通过 WorkBuddy 市场一键安装，无需手动复制文件。
-
-### 方式一：通过 WorkBuddy 市场安装（推荐）
+本技能收录于用户市场 **lenfon-marketplace**（GitHub 仓库 `https://github.com/LenFon/lenfon-marketplace`），安装方式如下：
 
 1. 在 WorkBuddy 对话中发送安装指令，例如：
-2. 在 WorkBuddy 对话框中发送安装指令，例如：
 
    > 请添加插件市场 https://github.com/LenFon/lenfon-marketplace ，并安装、启用其中的 material-design-styles 技能。
 
    或直接描述需求（如"从市场 lenfon-marketplace 安装 material-design-styles 技能"），WorkBuddy 会自动从市场拉取并安装到用户级技能目录。
-3. 安装完成后，在任意对话中输入 `@skill:material-design-styles` 即可调用。
+2. 在左侧【技能】面板可看到 `material-design-styles`。
 
-> 安装位置默认为用户级技能目录 `~/.workbuddy/skills/material-design-styles/`，对所有项目可用。
+**更新技能**：对话中再次发送市场安装指令即可拉取最新版（或进入技能目录执行 `git pull`）。
 
-### 方式二：手动安装（市场不可用时）
-
-1. 获取市场仓库：
-
-   ```bash
-   git clone https://github.com/LenFon/lenfon-marketplace.git
-   ```
-
-   或直接下载 ZIP 解压。
-
-2. 将仓库内的 `plugins/material-design-styles` 文件夹复制到 WorkBuddy 技能目录之一：
-
-   - **用户级**（所有项目可用）：`%USERPROFILE%\.workbuddy\skills\material-design-styles\`
-   - **项目级**（仅当前项目）：`<你的工作区>\.workbuddy\skills\material-design-styles\`
-
-3. 刷新或重启 WorkBuddy 会话，即可在对话中调用本技能。
-
-> 路径说明：Windows 上 `%USERPROFILE%` 即 `C:\Users\<你的用户名>`；复制后文件夹名须保持为 `material-design-styles`（与 `SKILL.md` 中 `name` 一致）。
+> **说明**：安装来源为市场仓库 `https://github.com/LenFon/lenfon-marketplace`（插件位于其 `plugins/material-design-styles` 子目录）。
 
 ## 使用方式
 
