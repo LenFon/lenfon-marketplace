@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Prism WPF 区域导航 深度指南</title>
+<style>
+  :root{
+    --bg:#0f1115; --panel:#171a21; --panel2:#1d2230; --line:#2a3142;
+    --txt:#e6e9ef; --muted:#9aa6b8; --accent:#4ea1ff; --accent2:#7ee0b8;
+    --warn:#ffcc66; --bad:#ff7b7b; --codebg:#0b0d12; --tag:#2b3252;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--txt);
+    font-family:-apple-system,"Segoe UI","Microsoft YaHei",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.7;font-size:15px}
+  .wrap{max-width:1080px;margin:0 auto;padding:32px 22px 80px}
+  h1{font-size:28px;margin:0 0 6px;letter-spacing:.5px}
+  h2{font-size:21px;margin:42px 0 12px;padding-bottom:8px;border-bottom:2px solid var(--line);color:#fff}
+  h3{font-size:17px;margin:26px 0 8px;color:var(--accent)}
+  h4{font-size:15px;margin:18px 0 6px;color:var(--accent2)}
+  p{margin:10px 0;color:#d7dce6}
+  .sub{color:var(--muted);font-size:14px;margin-top:0}
+  code{background:var(--tag);padding:1px 6px;border-radius:4px;font-size:13px;
+    font-family:"Cascadia Code","Consolas",monospace;color:#cfe3ff}
+  pre{background:var(--codebg);border:1px solid var(--line);border-radius:10px;
+    padding:14px 16px;overflow:auto;font-size:13px;line-height:1.55;
+    font-family:"Cascadia Code","Consolas",monospace;color:#d7e2f4}
+  pre .k{color:#c792ea} pre .t{color:#82aaff} pre .s{color:#c3e88d}
+  pre .c{color:#5c6b82;font-style:italic} pre .n{color:#f78c6c}
+  pre .f{color:#82aaff}
+  table{border-collapse:collapse;width:100%;margin:14px 0;font-size:14px}
+  th,td{border:1px solid var(--line);padding:9px 11px;text-align:left;vertical-align:top}
+  th{background:var(--panel2);color:#fff}
+  tr:nth-child(even){background:#121620}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;
+    padding:16px 18px;margin:16px 0}
+  .note{border-left:4px solid var(--accent);background:#121a2b;padding:10px 14px;
+    border-radius:0 8px 8px 0;margin:14px 0;color:#cdd9ee}
+  .warn{border-left:4px solid var(--warn);background:#241f10;padding:10px 14px;
+    border-radius:0 8px 8px 0;margin:14px 0;color:#f1e2c0}
+  .bad{border-left:4px solid var(--bad);background:#2a1414;padding:10px 14px;
+    border-radius:0 8px 8px 0;margin:14px 0;color:#ffd3d3}
+  .tag{display:inline-block;background:var(--tag);color:#bcd0ff;border-radius:6px;
+    padding:1px 9px;font-size:12px;margin-right:6px;font-family:monospace}
+  ul,ol{margin:10px 0 10px 4px;padding-left:22px}
+  li{margin:6px 0}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  @media(max-width:760px){.grid{grid-template-columns:1fr}}
+  .toc{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 20px;columns:2}
+  .toc a{color:var(--accent);text-decoration:none}
+  .toc a:hover{text-decoration:underline}
+  svg{display:block;margin:0 auto;max-width:100%}
+  .foot{margin-top:50px;color:var(--muted);font-size:13px;border-top:1px solid var(--line);padding-top:14px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>Prism for WPF · 区域导航（Region Navigation）深度指南</h1>
+<p class="sub">基于 PrismLibrary/Prism 与 Prism-Samples-Wpf 官方示例 17–24 的真实源码整理。所有代码片段均来自仓库原文，未改写。</p>
+
+<div class="card">
+<b>本指南覆盖</b>：导航的注册、发起、目标参与（INavigationAware）、参数传递、完成回调、确认/取消、视图生命周期（KeepAlive）、前进/后退日志（Journal），以及一组必须掌握的规则与坑。
+</div>
+
+<div class="toc">
+<a href="#c1">1. 概念与术语</a><br>
+<a href="#c2">2. 视图注册 RegisterForNavigation</a><br>
+<a href="#c3">3. 发起导航 RequestNavigate</a><br>
+<a href="#c4">4. 导航生命周期全景图</a><br>
+<a href="#c5">5. INavigationAware 三方法规则</a><br>
+<a href="#c6">6. 导航参数传递</a><br>
+<a href="#c7">7. 导航完成回调 NavigationResult</a><br>
+<a href="#c8">8. 确认/取消 IConfirmNavigationRequest</a><br>
+<a href="#c9">9. 视图复用与 KeepAlive</a><br>
+<a href="#c10">10. 前进/后退日志 Journal</a><br>
+<a href="#c11">11. View 与 ViewModel 谁参与</a><br>
+<a href="#c12">12. NavigationContext 完整 API</a><br>
+<a href="#c13">13. 规则与避坑清单</a><br>
+<a href="#c14">14. 综合可运行骨架</a><br>
+</div>
+
+<!-- ============ 1 ============ -->
+<h2 id="c1">1. 概念与术语</h2>
+<p>Prism 的“区域导航”是一套<strong>基于 URI 的视图切换机制</strong>：你给一个 Region 发一个目标标识（视图名或 Uri），Prism 负责解析视图、创建/复用实例、调用生命周期钩子、并维护前进/后退历史。它与 View Discovery / View Injection / View Activation 是 Region 的四种内容填充方式，导航是其中最“有状态”的一种。</p>
+<table>
+<tr><th>类型 / 接口</th><th>作用</th><th>来自示例</th></tr>
+<tr><td><code>IRegionManager</code></td><td>发起导航 <code>RequestNavigate</code>、获取 Region、<code>RegisterForNavigation</code> 的注册入口</td><td>17/18/21</td></tr>
+<tr><td><code>IRegionNavigationService</code></td><td>真正执行一次导航请求，持有 <code>Journal</code></td><td>24</td></tr>
+<tr><td><code>NavigationParameters</code></td><td>键值对参数容器，随导航传递</td><td>21</td></tr>
+<tr><td><code>NavigationContext</code></td><td>传给各生命周期方法的上下文：含 <code>Parameters</code>、<code>NavigationService</code>、<code>Uri</code>、<code>Region</code></td><td>20/21/24</td></tr>
+<tr><td><code>INavigationAware</code></td><td>目标视图/VM 参与：<code>OnNavigatedTo</code> / <code>IsNavigationTarget</code> / <code>OnNavigatedFrom</code></td><td>20/21/24</td></tr>
+<tr><td><code>IConfirmNavigationRequest</code></td><td><code>INavigationAware</code> 扩展，离开前确认/取消</td><td>22</td></tr>
+<tr><td><code>IRegionMemberLifetime</code></td><td><code>KeepAlive</code> 控制离开后视图是否被回收</td><td>23</td></tr>
+<tr><td><code>IRegionNavigationJournal</code></td><td>前进/后退历史：<code>GoBack</code>/<code>GoForward</code>/<code>CanGoBack</code>/<code>CanGoForward</code></td><td>24</td></tr>
+<tr><td><code>NavigationResult</code></td><td>回调结果：<code>Success</code> / <code>Exception</code> / <code>Context</code></td><td>18</td></tr>
+</table>
+
+<!-- ============ 2 ============ -->
+<h2 id="c2">2. 视图注册：RegisterForNavigation</h2>
+<p>没有被注册的视图无法作为导航目标。在模块的 <code>RegisterTypes</code> 中注册（示例 18 的 <code>ModuleAModule</code>）：</p>
+<pre><code><span class="k">public void</span> <span class="f">RegisterTypes</span>(IContainerRegistry containerRegistry)
+{
+    containerRegistry.<span class="f">RegisterForNavigation</span>&lt;ViewA&gt;();
+    containerRegistry.<span class="f">RegisterForNavigation</span>&lt;ViewB&gt;();
+}</code></pre>
+<h4>四种重载（Prism 9 实测可用）</h4>
+<table>
+<tr><th>重载</th><th>URI / 解析名</th><th>说明</th></tr>
+<tr><td><code>RegisterForNavigation&lt;TView&gt;()</code></td><td>视图类型短名，如 <code>"ViewA"</code></td><td>View 与同名 VM 按 ViewModelLocator 约定自动绑定</td></tr>
+<tr><td><code>RegisterForNavigation&lt;TView,TViewModel&gt;()</code></td><td>视图类型短名</td><td>显式指定 VM，不依赖约定</td></tr>
+<tr><td><code>RegisterForNavigation&lt;TView&gt;(string name)</code></td><td>自定义名 <code>name</code></td><td>用别名导航，如 <code>"Home"</code></td></tr>
+<tr><td><code>RegisterForNavigation&lt;TView,TViewModel&gt;(string name)</code></td><td>自定义名 <code>name</code></td><td>别名 + 显式 VM</td></tr>
+</table>
+<div class="note">导航的“Uri”默认就是视图类型的<strong>短名</strong>（去掉命名空间）。示例 17 中按钮传 <code>CommandParameter="ViewA"</code>，正好对应 <code>RegisterForNavigation&lt;ViewA&gt;()</code> 注册出的 URI。可用命名空间限定名或别名避免冲突。</div>
+
+<!-- ============ 3 ============ -->
+<h2 id="c3">3. 发起导航：RequestNavigate 三种形态</h2>
+<p>壳层 ViewModel 注入 <code>IRegionManager</code>，在命令里调用 <code>RequestNavigate</code>。以下均来自示例真实代码。</p>
+
+<h3>3.1 最简形式（示例 17）</h3>
+<pre><code><span class="k">private readonly</span> IRegionManager _regionManager;
+<span class="k">public</span> DelegateCommand&lt;<span class="t">string</span>&gt; NavigateCommand { <span class="k">get</span>; <span class="k">private set</span>; }
+
+<span class="k">public</span> MainWindowViewModel(IRegionManager regionManager)
+{
+    _regionManager = regionManager;
+    NavigateCommand = <span class="k">new</span> DelegateCommand&lt;<span class="t">string</span>&gt;(Navigate);
+}
+
+<span class="k">private void</span> <span class="f">Navigate</span>(<span class="t">string</span> navigatePath)
+{
+    <span class="k">if</span> (navigatePath != <span class="k">null</span>)
+        _regionManager.<span class="f">RequestNavigate</span>(<span class="s">"ContentRegion"</span>, navigatePath);
+}</code></pre>
+<p>XAML 中按钮把目标名作为 <code>CommandParameter</code> 传进来：</p>
+<pre><code><span class="c">&lt;!-- 示例 17 MainWindow.xaml --&gt;</span>
+&lt;Button Command=<span class="s">"{Binding NavigateCommand}"</span>
+        CommandParameter=<span class="s">"ViewA"</span>&gt;Navigate to View A&lt;/Button&gt;
+&lt;ContentControl prism:RegionManager.RegionName=<span class="s">"ContentRegion"</span> /&gt;</code></pre>
+
+<h3>3.2 带完成回调（示例 18）</h3>
+<pre><code><span class="k">private void</span> <span class="f">Navigate</span>(<span class="t">string</span> navigatePath)
+{
+    <span class="k">if</span> (navigatePath != <span class="k">null</span>)
+        _regionManager.<span class="f">RequestNavigate</span>(<span class="s">"ContentRegion"</span>, navigatePath, NavigationComplete);
+}
+
+<span class="k">private void</span> <span class="f">NavigationComplete</span>(NavigationResult result)
+{
+    <span class="c">// 真实代码只弹了 URI，但 NavigationResult 还携带 Success / Exception</span>
+    MessageBox.Show(<span class="t">string</span>.Format(<span class="s">"Navigation to {0} complete. "</span>, result.Context.Uri));
+}</code></pre>
+<div class="note">第三参数是一个 <code>Action&lt;NavigationResult&gt;</code>。导航<strong>完成（成功或失败）后</strong>回到 UI 线程调用。用它检查 <code>result.Success</code> 与 <code>result.Exception</code> 做错误处理。</div>
+
+<h3>3.3 带参数（示例 21）</h3>
+<pre><code><span class="k">private void</span> <span class="f">PersonSelected</span>(Person person)
+{
+    <span class="k">var</span> parameters = <span class="k">new</span> NavigationParameters();
+    parameters.<span class="f">Add</span>(<span class="s">"person"</span>, person);
+
+    <span class="k">if</span> (person != <span class="k">null</span>)
+        _regionManager.<span class="f">RequestNavigate</span>(<span class="s">"PersonDetailsRegion"</span>, <span class="s">"PersonDetail"</span>, parameters);
+}</code></pre>
+<div class="note">参数、回调可以同时给：<code>RequestNavigate(region, uri, NavigationComplete, parameters)</code>。还可以传 <code>Uri</code> 对象（含查询字符串，如 <code>new Uri("PersonDetail?name=Tom", UriKind.Relative)</code>），参数会被解析进 <code>NavigationParameters</code>。</div>
+
+<!-- ============ 4 ============ -->
+<h2 id="c4">4. 导航生命周期全景图</h2>
+<p>一次 <code>RequestNavigate</code> 在内部按顺序发生如下事件（箭头表示调用方向）：</p>
+<svg viewBox="0 0 760 430" width="760" height="430" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="a" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L8,3 L0,6 Z" fill="#4ea1ff"/>
+    </marker>
+  </defs>
+  <style>
+    .b{fill:#1d2230;stroke:#2a3142;stroke-width:1.5}
+    .t{fill:#e6e9ef;font:13px -apple-system,"Microsoft YaHei",sans-serif}
+    .h{fill:#4ea1ff;font:13px -apple-system,"Microsoft YaHei",sans-serif;font-weight:700}
+    .g{fill:#7ee0b8;font:13px -apple-system,"Microsoft YaHei",sans-serif;font-weight:700}
+  </style>
+
+  <rect class="b" x="250" y="10" width="260" height="46" rx="9"/>
+  <text class="h" x="380" y="32" text-anchor="middle">RequestNavigate(region, uri, …)</text>
+  <text class="t" x="380" y="49" text-anchor="middle" font-size="11">由 IRegionManager 发起</text>
+
+  <rect class="b" x="250" y="86" width="260" height="44" rx="9"/>
+  <text class="t" x="380" y="113" text-anchor="middle">① 旧视图 IsNavigationTarget?</text>
+
+  <rect class="b" x="40" y="160" width="240" height="44" rx="9"/>
+  <text class="t" x="160" y="187" text-anchor="middle">复用已有实例</text>
+  <rect class="b" x="480" y="160" width="240" height="44" rx="9"/>
+  <text class="t" x="600" y="187" text-anchor="middle">解析并创建新视图</text>
+
+  <rect class="b" x="250" y="234" width="260" height="44" rx="9"/>
+  <text class="g" x="380" y="261" text-anchor="middle">② 旧视图 OnNavigatedFrom</text>
+
+  <rect class="b" x="250" y="308" width="260" height="44" rx="9"/>
+  <text class="g" x="380" y="335" text-anchor="middle">③ 新视图 OnNavigatedTo</text>
+
+  <rect class="b" x="40" y="382" width="320" height="36" rx="9"/>
+  <text class="t" x="200" y="405" text-anchor="middle">④ Journal 记录 + ⑤ NavigationResult 回调</text>
+
+  <line x1="380" y1="56" x2="380" y2="84" stroke="#4ea1ff" stroke-width="2" marker-end="url(#a)"/>
+  <line x1="310" y1="130" x2="190" y2="158" stroke="#4ea1ff" stroke-width="2" marker-end="url(#a)"/>
+  <line x1="450" y1="130" x2="570" y2="158" stroke="#4ea1ff" stroke-width="2" marker-end="url(#a)"/>
+  <path d="M160,204 C160,224 380,224 380,230" fill="none" stroke="#4ea1ff" stroke-width="2" marker-end="url(#a)"/>
+  <path d="M600,204 C600,250 460,250 380,304" fill="none" stroke="#4ea1ff" stroke-width="2" marker-end="url(#a)"/>
+  <line x1="380" y1="278" x2="380" y2="306" stroke="#4ea1ff" stroke-width="2" marker-end="url(#a)"/>
+  <line x1="380" y1="352" x2="200" y2="380" stroke="#4ea1ff" stroke-width="2" marker-end="url(#a)"/>
+
+  <text class="t" x="150" y="148" font-size="11" fill="#9aa6b8">true</text>
+  <text class="t" x="600" y="148" font-size="11" fill="#9aa6b8">false / 无</text>
+</svg>
+<div class="note">注意：若<strong>旧视图</strong>实现了 <code>IConfirmNavigationRequest</code>，在第 ① 步之前还会先调用 <code>ConfirmNavigationRequest</code> 询问是否允许离开（见第 8 节）。</div>
+
+<!-- ============ 5 ============ -->
+<h2 id="c5">5. INavigationAware 三方法规则</h2>
+<p>导航目标（View 或 ViewModel，或两者）实现 <code>INavigationAware</code> 即可参与生命周期。示例 20 的 <code>ViewAViewModel</code> 是最小可运行范式：</p>
+<pre><code><span class="k">public class</span> <span class="t">ViewAViewModel</span> : BindableBase, <span class="t">INavigationAware</span>
+{
+    <span class="k">private int</span> _pageViews;
+    <span class="k">public int</span> PageViews { <span class="k">get</span> =&gt; _pageViews; <span class="k">set</span> =&gt; SetProperty(<span class="k">ref</span> _pageViews, <span class="k">value</span>); }
+
+    <span class="k">public void</span> <span class="f">OnNavigatedTo</span>(NavigationContext navigationContext)
+    {
+        PageViews++;   <span class="c">// 每次进入都自增，可证明视图被复用</span>
+    }
+
+    <span class="k">public bool</span> <span class="f">IsNavigationTarget</span>(NavigationContext navigationContext)
+    {
+        <span class="k">return</span> PageViews / 3 != 1;   <span class="c">// 返回 true=复用当前实例；false=创建新实例</span>
+    }
+
+    <span class="k">public void</span> <span class="f">OnNavigatedFrom</span>(NavigationContext navigationContext) { }
+}</code></pre>
+
+<table>
+<tr><th>方法</th><th>调用时机</th><th>返回值含义</th><th>典型用途</th></tr>
+<tr><td><code>OnNavigatedTo(ctx)</code></td><td>新视图成为活动视图<strong>之后</strong></td><td>void</td><td>读参数、加载数据、递增计数、绑定 Journal</td></tr>
+<tr><td><code>IsNavigationTarget(ctx)</code></td><td>导航解析阶段，决定复用哪个已有实例</td><td>true→复用现有实例；false→新建</td><td>按业务键复用（如同一 Person 复用同一页）</td></tr>
+<tr><td><code>OnNavigatedFrom(ctx)</code></td><td>旧视图即将失去活动状态<strong>之前</strong></td><td>void</td><td>保存草稿、注销事件、释放临时资源</td></tr>
+</table>
+
+<div class="warn"><b>IsNavigationTarget 是导航的“复用开关”。</b>默认（不实现 INavigationAware）每次导航都会创建新实例并叠加到 Region 的 Views 集合。实现后返回 <code>true</code> 可让同一 Region 复用同一视图，避免无限堆叠。</div>
+
+<!-- ============ 6 ============ -->
+<h2 id="c6">6. 导航参数传递（示例 21）</h2>
+<h3>6.1 发送方：构造 NavigationParameters</h3>
+<p>示例 21 的 <code>PersonListViewModel</code> 在 ListBox 选中项时把整个对象塞进参数：</p>
+<pre><code><span class="k">private void</span> <span class="f">PersonSelected</span>(Person person)
+{
+    <span class="k">var</span> parameters = <span class="k">new</span> NavigationParameters();
+    parameters.<span class="f">Add</span>(<span class="s">"person"</span>, person);
+
+    <span class="k">if</span> (person != <span class="k">null</span>)
+        _regionManager.<span class="f">RequestNavigate</span>(<span class="s">"PersonDetailsRegion"</span>, <span class="s">"PersonDetail"</span>, parameters);
+}</code></pre>
+<p>XAML 用 <code>InvokeCommandAction</code> 把选中项作为命令参数传出（注意引用 <code>xmlns:i</code> 与 <code>prism:</code>）：</p>
+<pre><code><span class="c">&lt;!-- PersonList.xaml --&gt;</span>
+&lt;ListBox x:Name=<span class="s">"_listOfPeople"</span> ItemsSource=<span class="s">"{Binding People}"</span>&gt;
+  &lt;i:Interaction.Triggers&gt;
+    &lt;i:EventTrigger EventName=<span class="s">"SelectionChanged"</span>&gt;
+      &lt;prism:InvokeCommandAction Command=<span class="s">"{Binding PersonSelectedCommand}"</span>
+            CommandParameter=<span class="s">"{Binding SelectedItem, ElementName=_listOfPeople}"</span> /&gt;
+    &lt;/i:EventTrigger&gt;
+  &lt;/i:Interaction.Triggers&gt;
+&lt;/ListBox&gt;
+&lt;TabControl prism:RegionManager.RegionName=<span class="s">"PersonDetailsRegion"</span> /&gt;</code></pre>
+
+<h3>6.2 接收方：在 OnNavigatedTo 取参数</h3>
+<p><code>PersonDetailViewModel</code> 实现 <code>INavigationAware</code>，从 <code>navigationContext.Parameters</code> 按 key 取：</p>
+<pre><code><span class="k">public void</span> <span class="f">OnNavigatedTo</span>(NavigationContext navigationContext)
+{
+    <span class="k">var</span> person = navigationContext.Parameters[<span class="s">"person"</span>] <span class="k">as</span> Person;
+    <span class="k">if</span> (person != <span class="k">null</span>)
+        SelectedPerson = person;
+}
+
+<span class="k">public bool</span> <span class="f">IsNavigationTarget</span>(NavigationContext navigationContext)
+{
+    <span class="k">var</span> person = navigationContext.Parameters[<span class="s">"person"</span>] <span class="k">as</span> Person;
+    <span class="k">if</span> (person != <span class="k">null</span>)
+        <span class="k">return</span> SelectedPerson != <span class="k">null</span> &amp;&amp; SelectedPerson.LastName == person.LastName;
+    <span class="k">else</span>
+        <span class="k">return</span> <span class="k">true</span>;
+}</code></pre>
+<div class="note">这里 <code>IsNavigationTarget</code> 用 <code>LastName</code> 作为业务键：导航到“同一人”时复用同一页，导航到“不同人”时新建页。参数的 key 区分大小写，取不到返回 <code>null</code>。</div>
+
+<!-- ============ 7 ============ -->
+<h2 id="c7">7. 导航完成回调 NavigationResult（示例 18）</h2>
+<table>
+<tr><th>属性</th><th>含义</th></tr>
+<tr><td><code>result.Success</code></td><td>导航是否成功（视图解析/创建/激活无异常）</td></tr>
+<tr><td><code>result.Exception</code></td><td>失败时的异常，用来定位“视图未注册 / 构造异常 / 区域不存在”等</td></tr>
+<tr><td><code>result.Context</code></td><td>本次导航的 <code>NavigationContext</code>（含 Uri、Parameters、Region、NavigationService）</td></tr>
+</table>
+<p>典型错误处理写法（在示例 18 基础上补强）：</p>
+<pre><code><span class="k">private void</span> <span class="f">NavigationComplete</span>(NavigationResult result)
+{
+    <span class="k">if</span> (result.Success)
+        _log.Info(<span class="s">$"导航到 {result.Context.Uri} 成功"</span>);
+    <span class="k">else</span>
+        MessageBox.Show(<span class="s">$"导航失败：{result.Exception?.Message}"</span>);
+}</code></pre>
+<div class="bad">导航回调在<strong> UI 线程</strong>执行。若视图构造函数或 <code>OnNavigatedTo</code> 抛异常，<code>Success=false</code> 且 <code>Exception</code> 非空——务必处理，否则区域会停留在旧视图且无提示。</div>
+
+<!-- ============ 8 ============ -->
+<h2 id="c8">8. 确认 / 取消导航：IConfirmNavigationRequest（示例 22）</h2>
+<p>当目标（或当前活动视图）实现 <code>IConfirmNavigationRequest</code> 时，Prism 在离开前调用它，<strong>必须调用 <code>continuationCallback(bool)</code> 给出裁决</strong>，否则导航会永久挂起。</p>
+<pre><code><span class="k">public class</span> <span class="t">ViewAViewModel</span> : BindableBase, <span class="t">IConfirmNavigationRequest</span>
+{
+    <span class="k">public void</span> <span class="f">ConfirmNavigationRequest</span>(NavigationContext navigationContext,
+                                         Action&lt;<span class="t">bool</span>&gt; continuationCallback)
+    {
+        <span class="k">bool</span> result = <span class="k">true</span>;
+        <span class="k">if</span> (MessageBox.Show(<span class="s">"Do you want to navigate?"</span>, <span class="s">"Navigate?"</span>,
+                MessageBoxButton.YesNo) == MessageBoxResult.No)
+            result = <span class="k">false</span>;
+
+        continuationCallback(result);   <span class="c">// 必须调用：true 放行，false 取消</span>
+    }
+
+    <span class="k">public bool</span> <span class="f">IsNavigationTarget</span>(NavigationContext navigationContext) =&gt; <span class="k">true</span>;
+    <span class="k">public void</span> <span class="f">OnNavigatedFrom</span>(NavigationContext navigationContext) { }
+    <span class="k">public void</span> <span class="f">OnNavigatedTo</span>(NavigationContext navigationContext) { }
+}</code></pre>
+<div class="warn"><b>规则</b>：① <code>continuationCallback</code> 只能调用一次；② 在异步场景里可以延后调用（如等用户确认弹窗）；③ 返回 <code>false</code> 时本次导航整体取消，旧视图保持活动；④ 确认逻辑也可放在<strong>正要离开</strong>的视图上，不一定要在目标视图。</div>
+
+<!-- ============ 9 ============ -->
+<h2 id="c9">9. 视图复用与生命周期：IRegionMemberLifetime（示例 23）</h2>
+<p>默认导航视图在离开后<strong>仍保留</strong>在 Region 的 Views 集合中（只是非活动）。实现 <code>IRegionMemberLifetime</code> 并把 <code>KeepAlive</code> 设为 <code>false</code>，离开后即被移除并销毁。</p>
+<pre><code><span class="k">public class</span> <span class="t">ViewAViewModel</span> : BindableBase, <span class="t">INavigationAware</span>, <span class="t">IRegionMemberLifetime</span>
+{
+    <span class="k">public bool</span> KeepAlive =&gt; <span class="k">false</span>;   <span class="c">// 离开即销毁，下次导航重新创建</span>
+
+    <span class="k">public bool</span> <span class="f">IsNavigationTarget</span>(NavigationContext navigationContext) =&gt; <span class="k">false</span>;
+    <span class="k">public void</span> <span class="f">OnNavigatedFrom</span>(NavigationContext navigationContext) { }
+    <span class="k">public void</span> <span class="f">OnNavigatedTo</span>(NavigationContext navigationContext) { }
+}</code></pre>
+<p>示例 23 的壳层通过监听 Region/Views 集合变化，把“当前存活视图名”显示出来，直观验证 KeepAlive 效果：</p>
+<pre><code><span class="c">// RegionMemberLifetime MainWindowViewModel（节选）</span>
+_regionManager.Regions.CollectionChanged += Regions_CollectionChanged;
+<span class="c">// Views 增删时把视图类型名加入/移出 ObservableCollection&lt;object&gt; Views</span>
+<span class="k">private void</span> <span class="f">Views_CollectionChanged</span>(<span class="k">object</span> sender, NotifyCollectionChangedEventArgs e)
+{
+    <span class="k">if</span> (e.Action == NotifyCollectionChangedAction.Add)
+        Views.Add(e.NewItems[0].GetType().Name);
+    <span class="k">else if</span> (e.Action == NotifyCollectionChangedAction.Remove)
+        Views.Remove(e.OldItems[0].GetType().Name);
+}</code></pre>
+<table>
+<tr><th><code>KeepAlive</code></th><th>行为</th><th>适用</th></tr>
+<tr><td><code>true</code>（默认）</td><td>离开后视图实例保留，可随时切回，状态不丢</td><td>表单、编辑页等需保留现场</td></tr>
+<tr><td><code>false</code></td><td>离开即移除销毁，下次重新构造</td><td>一次性向导页、轻量展示页</td></tr>
+</table>
+
+<!-- ============ 10 ============ -->
+<h2 id="c10">10. 前进 / 后退日志：IRegionNavigationJournal（示例 24）</h2>
+<p>每次成功的 <code>RequestNavigate</code> 都会被记入 Region 的 <code>NavigationService.Journal</code>。在 <code>OnNavigatedTo</code> 里取出 Journal，即可实现浏览器式前进/后退。</p>
+<pre><code><span class="c">// PersonDetailViewModel（后退）</span>
+<span class="k">private</span> IRegionNavigationJournal _journal;
+
+<span class="k">public void</span> <span class="f">OnNavigatedTo</span>(NavigationContext navigationContext)
+{
+    _journal = navigationContext.NavigationService.Journal;   <span class="c">// 从上下文取日志</span>
+    <span class="k">var</span> person = navigationContext.Parameters[<span class="s">"person"</span>] <span class="k">as</span> Person;
+    <span class="k">if</span> (person != <span class="k">null</span>) SelectedPerson = person;
+}
+
+<span class="k">private void</span> <span class="f">GoBack</span>() =&gt; _journal.GoBack();</code></pre>
+<pre><code><span class="c">// PersonListViewModel（前进，带 CanExecute）</span>
+<span class="k">public void</span> <span class="f">OnNavigatedTo</span>(NavigationContext navigationContext)
+{
+    _journal = navigationContext.NavigationService.Journal;
+    GoForwardCommand.RaiseCanExecuteChanged();   <span class="c">// 进入后刷新按钮可用态</span>
+}
+<span class="k">private void</span> <span class="f">GoForward</span>() =&gt; _journal.GoForward();
+<span class="k">private bool</span> <span class="f">CanGoForward</span>() =&gt; _journal != <span class="k">null</span> &amp;&amp; _journal.CanGoForward;</code></pre>
+<table>
+<tr><th>成员</th><th>作用</th></tr>
+<tr><td><code>GoBack()</code> / <code>CanGoBack</code></td><td>后退到上一记录；无历史时为 false</td></tr>
+<tr><td><code>GoForward()</code> / <code>CanGoForward</code></td><td>前进到下一记录；已在最新时为 false</td></tr>
+<tr><td><code>Clear()</code></td><td>清空历史</td></tr>
+</table>
+<div class="bad"><b>只有 <code>RequestNavigate</code> 才会写入 Journal。</b>用 View Injection / Activation 切视图、或直接 <code>region.Activate(view)</code> 都不会产生历史记录，<code>GoBack/GoForward</code> 也就无效果。示例 24 中后退按钮放在 <code>PersonDetail</code>、前进按钮放在 <code>PersonList</code>，二者共享同一个 Region 的 Journal。</div>
+
+<!-- ============ 11 ============ -->
+<h2 id="c11">11. View 与 ViewModel 谁参与导航？</h2>
+<p>Prism 会<strong>同时检查 View 和 ViewModel</strong> 是否实现 <code>INavigationAware</code> / <code>IConfirmNavigationRequest</code> / <code>IRegionMemberLifetime</code>，两者都会收到调用。常见组合：</p>
+<table>
+<tr><th>场景</th><th>建议放哪</th><th>原因</th></tr>
+<tr><td>读参数、加载数据</td><td>ViewModel</td><td>纯逻辑，可单测，不依赖 UI 线程</td></tr>
+<tr><td>MessageBox 确认离开</td><td>View 代码后台 或 VM</td><td>示例 22 放在 VM；确需弹窗可放 View。务必调用 continuationCallback</td></tr>
+<tr><td>操作具体控件 / 焦点</td><td>View 代码后台</td><td>需要视觉元素引用</td></tr>
+<tr><td>KeepAlive</td><td>ViewModel（更常见）</td><td>生命周期状态与 VM 绑定更自然</td></tr>
+</table>
+<div class="note">示例 19 用 <code>TabControl</code> 作 Region，并把 <code>TabItem.Header</code> 绑定到 <code>DataContext.Title</code>，证明“导航目标可以是任何被 RegionAdapter 支持的控件”，不只是 ContentControl。导航参与的钩子对 View / VM 一视同仁。</div>
+
+<!-- ============ 12 ============ -->
+<h2 id="c12">12. NavigationContext 完整 API</h2>
+<table>
+<tr><th>成员</th><th>类型</th><th>说明</th></tr>
+<tr><td><code>Parameters</code></td><td><code>NavigationParameters</code></td><td>本次导航携带的全部参数，支持索引器 <code>[key]</code> 与 <code>GetValue&lt;T&gt;(key)</code></td></tr>
+<tr><td><code>Uri</code></td><td><code>Uri</code></td><td>本次导航目标 URI（含查询字符串，若用 Uri 形式发起）</td></tr>
+<tr><td><code>NavigationService</code></td><td><code>IRegionNavigationService</code></td><td>本次导航服务，持有 <code>Journal</code>，可继续 <code>RequestNavigate</code> 链式导航</td></tr>
+<tr><td><code>Region</code></td><td><code>IRegion</code></td><td>目标所在 Region</td></tr>
+</table>
+
+<!-- ============ 13 ============ -->
+<h2 id="c13">13. 规则与避坑清单</h2>
+<div class="card">
+<ol>
+<li><b>先注册，后导航。</b>未 <code>RegisterForNavigation</code> 的视图调用 <code>RequestNavigate</code> 会失败，<code>NavigationResult.Success=false</code> 且 <code>Exception</code> 提示“未找到视图”。</li>
+<li><b>区域名必须存在。</b>第一个参数 <code>"ContentRegion"</code> 要在 XAML 里用 <code>prism:RegionManager.RegionName</code> 声明过，否则找不到区域。</li>
+<li><b>默认每次导航都新建视图。</b>想复用必须实现 <code>IsNavigationTarget</code> 返回 true，否则 Region.Views 会无限堆叠（内存泄漏风险）。</li>
+<li><b>确认导航必须调用 continuationCallback。</b>忘了调用 → 导航卡死，界面无响应。</li>
+<li><b>Journal 只对 RequestNavigate 生效。</b>View Injection / Activation 不产生历史，GoBack/GoForward 无效。</li>
+<li><b>KeepAlive=false 会销毁视图。</b>若你又在 <code>IsNavigationTarget</code> 返回 true 会冲突——示例 23 同时返回 false 表示“不复用且离开即销毁”，二者语义要一致。</li>
+<li><b>参数跨模块传对象要可序列化/可共享。</b>推荐传 Id 或 DTO，而非直接传 UI 元素；跨模块时类型需在共享契约层（如你的 Application 层）可见。</li>
+<li><b>回调在 UI 线程。</b>可在回调里直接操作 UI / 弹窗，但别做长耗时同步操作。</li>
+<li><b>导航目标可放在 ViewModel 或 View。</b>同一导航周期里两者都会被调用，注意别重复处理逻辑。</li>
+<li><b>异步导航。</b>Prism 9 提供 <code>RequestNavigate</code> 的任务重载（<code>Task&lt;NavigationResult&gt;</code>），可在 <code>async/await</code> 中等待完成，取代回调写法。</li>
+<li><b>Region 适配器决定容器语义。</b>ContentControl=单活动视图；Selector/TabControl/ItemsControl=可多视图共存。导航/Journal 行为在单视图容器下最直观。</li>
+<li><b>与 ViewModelLocator 共存。</b>导航视图同样适用 <code>AutoWireViewModel</code>；用 <code>RegisterForNavigation&lt;TView,TViewModel&gt;()</code> 可绕过命名约定强制绑定。</li>
+</ol>
+</div>
+
+<!-- ============ 14 ============ -->
+<h2 id="c14">14. 综合可运行骨架（整合全部要素）</h2>
+<p>把上面的要点拼成一个最小可运行示例（Prism.Unity，模块内注册，壳层导航，目标读参数 + 支持后退）：</p>
+<pre><code><span class="c">// App.xaml.cs</span>
+<span class="k">public partial class</span> <span class="t">App</span> : PrismApplication
+{
+    <span class="k">protected override</span> Window <span class="f">CreateShell</span>() =&gt; Container.Resolve&lt;MainWindow&gt;();
+    <span class="k">protected override void</span> <span class="f">RegisterTypes</span>(IContainerRegistry c) { }
+    <span class="k">protected override void</span> <span class="f">ConfigureModuleCatalog</span>(IModuleCatalog cat)
+        =&gt; cat.AddModule&lt;ModuleA.ModuleAModule&gt;();
+}
+
+<span class="c">// ModuleA/ModuleAModule.cs</span>
+<span class="k">public void</span> <span class="f">RegisterTypes</span>(IContainerRegistry c)
+{
+    c.RegisterForNavigation&lt;PersonList&gt;();
+    c.RegisterForNavigation&lt;PersonDetail, PersonDetailViewModel&gt;();
+}
+
+<span class="c">// 发起（PersonListViewModel）</span>
+_regionManager.RequestNavigate(<span class="s">"MainRegion"</span>, <span class="s">"PersonDetail"</span>,
+    <span class="k">new</span> NavigationParameters { { <span class="s">"id"</span>, 42 } });
+
+<span class="c">// 接收（PersonDetailViewModel : INavigationAware）</span>
+<span class="k">public void</span> <span class="f">OnNavigatedTo</span>(NavigationContext ctx)
+{
+    Id = ctx.Parameters.GetValue&lt;<span class="t">int</span>&gt;(<span class="s">"id"</span>);
+    _journal = ctx.NavigationService.Journal;   <span class="c">// 接管 Journal 以支持后退</span>
+}</code></pre>
+
+<div class="note">结合你现有 <b>ABP + Prism 分层</b>：把 <code>RegisterForNavigation</code> 放进各模块的 <code>RegisterTypes</code>（模块即你 General.EQP 的上料/视觉/运控子模块），导航参数优先用 <strong>Application 层契约 DTO</strong>（如 <code>PickTaskDto</code>）而非 Domain 实体，保证跨模块类型可见且解耦。WMX3 运控回调触发导航时，从后台线程回到 UI 用 <code>RequestNavigate</code> 的任务重载 + <code>await</code>。</div>
+
+<div class="foot">
+整理自 PrismLibrary/Prism 与 Prism-Samples-Wpf（示例 17 BasicRegionNavigation、18 NavigationCallback、19 NavigationParticipation、
+20 NavigateToExistingViews、21 PassingParameters、22 ConfirmCancelNavigation、23 RegionMemberLifetime、24 NavigationJournal）。
+所有 C#/XAML 片段均取自仓库 master 分支原文。如需把本指南拆成「导航篇 / 模块化篇 / MVVM 篇」分册，或生成可编译的 <code>slnx + CPM + src/</code> 骨架，告诉我即可。
+</div>
+
+</div>
+</body>
+</html>

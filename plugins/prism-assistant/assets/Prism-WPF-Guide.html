@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Prism for WPF 使用详解（基于 PrismLibrary 官方示例）</title>
+<style>
+  :root{ --bg:#fafafa; --fg:#1f2328; --acc:#2d6cdf; --acc2:#0b6; --code:#f4f5f7; --border:#e3e6ea; --muted:#6b7280; }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,"Segoe UI",Roboto,"Microsoft YaHei",sans-serif;background:var(--bg);color:var(--fg);line-height:1.65}
+  header{background:linear-gradient(135deg,#2d6cdf,#5b3df0);color:#fff;padding:32px 40px}
+  header h1{margin:0 0 6px;font-size:26px}
+  header p{margin:0;opacity:.92;font-size:14px}
+  .wrap{display:flex;max-width:1320px;margin:0 auto}
+  nav{width:260px;flex:0 0 260px;padding:22px 14px;position:sticky;top:0;align-self:flex-start;height:100vh;overflow:auto;border-right:1px solid var(--border);background:#fff}
+  nav a{display:block;color:var(--fg);text-decoration:none;padding:5px 9px;border-radius:6px;font-size:13px}
+  nav a:hover{background:var(--code)}
+  nav .grp{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin:10px 9px 2px}
+  main{flex:1;padding:22px 38px 90px;min-width:0}
+  section{background:#fff;border:1px solid var(--border);border-radius:10px;padding:20px 26px;margin-bottom:20px}
+  h2{margin-top:0;border-left:4px solid var(--acc);padding-left:10px;font-size:20px}
+  h3{color:#243;font-size:16px;margin:18px 0 6px}
+  h4{color:#374;font-size:14px;margin:14px 0 4px}
+  p,li{font-size:14px}
+  code{background:var(--code);padding:1px 6px;border-radius:4px;font-family:"Cascadia Code",Consolas,monospace;font-size:12.5px}
+  pre{background:#1e1e2e;color:#e6e6f0;padding:13px 15px;border-radius:8px;overflow:auto;font-size:12.5px;line-height:1.5}
+  pre code{background:none;color:inherit;padding:0}
+  table{border-collapse:collapse;width:100%;margin:12px 0;font-size:13px}
+  th,td{border:1px solid var(--border);padding:7px 9px;text-align:left;vertical-align:top}
+  th{background:#f0f3f8}
+  .tag{display:inline-block;background:#e8f0ff;color:var(--acc);border-radius:4px;padding:1px 7px;font-size:11.5px;margin:2px 0}
+  .note{background:#fff8e6;border-left:4px solid #f0a500;padding:9px 13px;border-radius:6px;font-size:13px;margin:10px 0}
+  .tip{background:#eafaf0;border-left:4px solid #0b6;padding:9px 13px;border-radius:6px;font-size:13px;margin:10px 0}
+  .mini{color:var(--muted);font-size:12px}
+  .sample{font-size:11px;color:var(--acc);font-weight:600}
+  a.anchor{color:var(--acc);text-decoration:none}
+</style>
+</head>
+<body>
+<header>
+  <h1>Prism for WPF 使用详解</h1>
+  <p>基于 github.com/PrismLibrary/Prism 与 Prism-Samples-Wpf 官方示例归纳 · 含 14+ 真实源码片段 · 截至仓库 master 分支（2024–2026）</p>
+</header>
+<div class="wrap">
+<nav>
+  <a href="#intro">1. 简介与 NuGet 包</a>
+  <a href="#index">2. 官方示例总索引</a>
+  <a href="#concepts">3. 核心概念与生命周期</a>
+  <a href="#boot">4. 应用启动</a>
+  <a href="#mvvm">5. MVVM 与属性通知</a>
+  <a href="#vml">6. ViewModelLocator</a>
+  <a href="#cmd">7. DelegateCommand</a>
+  <a href="#ccmd">8. CompositeCommand</a>
+  <a href="#ea">9. EventAggregator</a>
+  <a href="#region">10. Regions 区域</a>
+  <a href="#nav">11. Region Navigation</a>
+  <a href="#module">12. Modules 模块化</a>
+  <a href="#dialog">13. DialogService</a>
+  <a href="#inter">14. Interactivity</a>
+  <a href="#di">15. 依赖注入</a>
+  <a href="#struct">16. 推荐目录结构</a>
+  <a href="#tips">17. 最佳实践与陷阱</a>
+</nav>
+<main>
+
+<section id="intro">
+<h2>1. 简介与 NuGet 包</h2>
+<p><strong>Prism</strong> 是一套用于构建<strong>松耦合、可维护、可测试</strong>的 XAML 应用的框架，内置 MVVM、依赖注入、命令、EventAggregator、Region、导航、对话框等模式。跨平台核心 <code>Prism.Core</code> 基于 .NET Standard 2.0，平台相关能力在各平台库中分别实现。</p>
+<h3>平台支持</h3>
+<table>
+<tr><th>平台</th><th>主包</th><th>容器包</th></tr>
+<tr><td>WPF</td><td><code>Prism.Wpf</code></td><td><code>Prism.Unity</code> / <code>Prism.DryIoc</code></td></tr>
+<tr><td>Avalonia</td><td><code>Prism.Avalonia</code></td><td><code>Prism.DryIoc.Avalonia</code></td></tr>
+<tr><td>.NET MAUI</td><td><code>Prism.Maui</code></td><td><code>Prism.DryIoc.Maui</code> / <code>Prism.Maui.Rx</code></td></tr>
+<tr><td>Uno / WinUI</td><td><code>Prism.Uno</code></td><td><code>Prism.DryIoc.Uno.WinUI</code></td></tr>
+</table>
+<div class="note">⚠️ 从 v7 起 Prism 改为<strong>按平台/容器分发包</strong>。WPF 项目应直接装 <code>Prism.Unity</code> 或 <code>Prism.DryIoc</code>（已含 Prism.Wpf + 容器集成），不要再混装独立的 <code>Prism.Wpf</code>+<code>Prism.Unity.Container</code> 旧组合。容器建议全项目统一（示例多用 Unity / DryIoc）。<strong>只装生产可用稳定版，禁止 preview/alpha/beta/rc。</strong></div>
+</section>
+
+<section id="index">
+<h2>2. 官方示例总索引（Prism-Samples-Wpf）</h2>
+<p class="mini">示例建议从 01 起顺序学习，每个建立在上一概念之上。括号内为对应的关键 API。</p>
+<table>
+<tr><th>#</th><th>主题</th><th>学到什么</th></tr>
+<tr><td>01</td><td>Bootstrapper &amp; Shell</td><td>基础启动器与外壳（<code>PrismApplication</code>/<code>PrismBootstrapper</code>）</td></tr>
+<tr><td>02</td><td>Regions</td><td>声明区域</td></tr>
+<tr><td>03</td><td>Custom Regions</td><td>为 <code>StackPanel</code> 写自定义区域适配器</td></tr>
+<tr><td>04</td><td>View Discovery</td><td>按约定自动注入视图</td></tr>
+<tr><td>05</td><td>View Injection</td><td>手动增删视图</td></tr>
+<tr><td>06</td><td>View Activation</td><td>激活/停用视图</td></tr>
+<tr><td>07</td><td>Modules</td><td>模块目录：App.config / Code / Directory / 手动</td></tr>
+<tr><td>08</td><td>ViewModelLocator</td><td>自动绑定 VM</td></tr>
+<tr><td>09</td><td>Change Convention</td><td>修改 VM 定位约定</td></tr>
+<tr><td>10</td><td>Custom Registrations</td><td>手动注册 VM</td></tr>
+<tr><td>11</td><td>DelegateCommands</td><td><code>DelegateCommand</code> / <code>ObservesXxx</code></td></tr>
+<tr><td>12</td><td>CompositeCommands</td><td>聚合多个命令</td></tr>
+<tr><td>13</td><td>IActiveAware Commands</td><td>仅活动视图的命令生效</td></tr>
+<tr><td>14</td><td>Event Aggregator</td><td>发布/订阅</td></tr>
+<tr><td>15</td><td>Filtering Events</td><td>订阅时过滤</td></tr>
+<tr><td>16</td><td>RegionContext</td><td>向嵌套区域传数据</td></tr>
+<tr><td>17</td><td>Basic Region Navigation</td><td>基础区域导航</td></tr>
+<tr><td>18</td><td>Navigation Callback</td><td>导航完成回调</td></tr>
+<tr><td>19</td><td>Navigation Participation</td><td>视图/VM 参与导航（<code>INavigationAware</code>）</td></tr>
+<tr><td>20</td><td>Navigate To Existing Views</td><td>控制导航时的视图实例</td></tr>
+<tr><td>21</td><td>Passing Parameters</td><td>导航传参</td></tr>
+<tr><td>22</td><td>Confirm/Cancel Navigation</td><td>确认或取消导航</td></tr>
+<tr><td>23</td><td>Region Member Lifetime</td><td>控制视图存活期</td></tr>
+<tr><td>24</td><td>Navigation Journal</td><td>前进/后退</td></tr>
+<tr><td>26</td><td>Dialog Service</td><td>对话框服务</td></tr>
+<tr><td>27/28</td><td>Styling / Custom Window</td><td>对话框样式与自定义窗口</td></tr>
+<tr><td>29</td><td>InvokeCommandAction</td><td>交互行为绑定命令</td></tr>
+</table>
+</section>
+
+<section id="concepts">
+<h2>3. 核心概念与生命周期</h2>
+<table>
+<tr><th>概念</th><th>作用</th><th>关键类型</th></tr>
+<tr><td>Shell</td><td>主窗口（组合根），含 Region 占位</td><td>普通 <code>Window</code></td></tr>
+<tr><td>Container</td><td>依赖注入，解析 View/VM/服务</td><td><code>IContainerRegistry</code> / <code>IContainerProvider</code></td></tr>
+<tr><td>BindableBase</td><td>属性变更通知基类</td><td><code>SetProperty</code></td></tr>
+<tr><td>ViewModelLocator</td><td>按约定注入 DataContext</td><td><code>ViewModelLocationProvider</code></td></tr>
+<tr><td>DelegateCommand</td><td>ICommand 实现</td><td><code>DelegateCommand</code> / <code>CompositeCommand</code></td></tr>
+<tr><td>EventAggregator</td><td>弱引用发布/订阅</td><td><code>IEventAggregator</code> / <code>PubSubEvent&lt;T&gt;</code></td></tr>
+<tr><td>Region</td><td>Shell 中可填充的占位区</td><td><code>IRegionManager</code> / <code>RegionAdapterBase</code></td></tr>
+<tr><td>Navigation</td><td>区域间切视图、传参</td><td><code>RequestNavigate</code> / <code>INavigationAware</code></td></tr>
+<tr><td>Module</td><td>可插拔功能单元</td><td><code>IModule</code> / <code>IModuleCatalog</code></td></tr>
+<tr><td>DialogService</td><td>模态弹窗与结果</td><td><code>IDialogService</code> / <code>IDialogAware</code></td></tr>
+</table>
+<h4>应用启动生命周期</h4>
+<pre><code>App.OnStartup → Container 构建 → ConfigureViewModelLocator()
+  → RegisterTypes()        // 注册服务/视图/对话框
+  → ConfigureModuleCatalog()// 加载模块
+  → InitializeModules()
+  → CreateShell()          // 解析并展示主窗口
+  → 模块 OnInitialized()   // 把视图注册到区域</code></pre>
+</section>
+
+<section id="boot">
+<h2>4. 应用启动</h2>
+<p>新版示例一律用 <code>PrismApplication</code>（示例 01/07/17/26）：</p>
+<pre><code>// App.xaml —— 去掉 StartupUri，只保留 x:Class
+// App.xaml.cs
+public partial class App : PrismApplication
+{
+    // 创建主窗口（Shell）；用 Container 解析，依赖自动注入
+    protected override Window CreateShell() =&gt; Container.Resolve&lt;MainWindow&gt;();
+
+    // 组合根：注册所有服务、视图、对话框
+    protected override void RegisterTypes(IContainerRegistry containerRegistry) { }
+
+    // 可选：以代码方式加载模块
+    protected override void ConfigureModuleCatalog(IModuleCatalog moduleCatalog)
+    {
+        moduleCatalog.AddModule&lt;ModuleA.ModuleAModule&gt;();
+    }
+}</code></pre>
+<div class="tip">旧式 <code>PrismBootstrapper</code>（示例 01 早期写法）：在 <code>App.OnStartup</code> 里 <code>new Bootstrapper().Run();</code>，Bootstrapper 重写 <code>CreateShell()</code> 与 <code>RegisterTypes()</code>。新项目直接用 <code>PrismApplication</code> 即可，无需自己写 Bootstrapper。</div>
+</section>
+
+<section id="mvvm">
+<h2>5. MVVM 与属性通知</h2>
+<p>所有 ViewModel 继承 <code>BindableBase</code>，用 <code>SetProperty(ref field, value)</code> 触发 <code>INotifyPropertyChanged</code>：</p>
+<pre><code>public class MainWindowViewModel : BindableBase
+{
+    private string _title = "Prism Unity Application";
+    public string Title
+    {
+        get =&gt; _title;
+        set =&gt; SetProperty(ref _title, value);   // 值变化自动通知 UI
+    }
+
+    // 集合属性同样用 SetProperty 包装
+    private ObservableCollection&lt;string&gt; _messages;
+    public ObservableCollection&lt;string&gt; Messages
+    {
+        get =&gt; _messages;
+        set =&gt; SetProperty(ref _messages, value);
+    }
+}</code></pre>
+<div class="note">示例源码用「私有字段 + 属性」写法。若项目用 C# 13 可改用分部属性 <code>[ObservableProperty]</code> 写法（按你的项目约定），或 CommunityToolkit.Mvvm 的 <code>ObservableObject</code>。Prism 的 <code>BindableBase</code> 与 CommunityToolkit 可并存，但同一 VM 不要混用两套通知机制。</div>
+</section>
+
+<section id="vml">
+<h2>6. ViewModelLocator（VM 自动绑定）</h2>
+<p>在 View 根元素加一行，按「View 名 → ViewModel 名」约定注入 <code>DataContext</code>（示例 08）：</p>
+<pre><code>&lt;Window x:Class="ViewModelLocator.Views.MainWindow"
+        xmlns:prism="http://prismlibrary.com/"
+        prism:ViewModelLocator.AutoWireViewModel="True"
+        Title="{Binding Title}"&gt;
+    &lt;Grid&gt;
+        &lt;ContentControl prism:RegionManager.RegionName="ContentRegion" /&gt;
+    &lt;/Grid&gt;
+&lt;/Window&gt;</code></pre>
+<h4>默认约定</h4>
+<table>
+<tr><th>View</th><th>对应 ViewModel</th></tr>
+<tr><td><code>Views.MainWindow</code></td><td><code>ViewModels.MainWindowViewModel</code></td></tr>
+</table>
+<h4>自定义约定（示例 09）：重写 <code>ConfigureViewModelLocator</code></h4>
+<pre><code>protected override void ConfigureViewModelLocator()
+{
+    base.ConfigureViewModelLocator();
+    ViewModelLocationProvider.SetDefaultViewTypeToViewModelTypeResolver((viewType) =&gt;
+    {
+        var viewName = viewType.FullName;                       // 如 Views.MainWindow
+        var asm = viewType.GetTypeInfo().Assembly.FullName;
+        var vmName = $"{viewName}ViewModel, {asm}";             // 改成你的命名规则
+        return Type.GetType(vmName);
+    });
+}</code></pre>
+<h4>手动注册特定 View（示例 10）</h4>
+<pre><code>protected override void ConfigureViewModelLocator()
+{
+    base.ConfigureViewModelLocator();
+    // 类型 / 类型
+    ViewModelLocationProvider.Register&lt;MainWindow, CustomViewModel&gt;();
+    // 或 类型 / 工厂（走容器解析，可注入依赖）
+    // ViewModelLocationProvider.Register&lt;MainWindow&gt;(() =&gt; Container.Resolve&lt;CustomViewModel&gt;());
+}</code></pre>
+<div class="tip">自定义 ViewModel 示例（示例 10）：<code>CustomViewModel : BindableBase</code>，<code>Title="Custom ViewModel Application"</code>。运行时 MainWindow 的 DataContext 即为此 VM。</div>
+</section>
+
+<section id="cmd">
+<h2>7. DelegateCommand 命令</h2>
+<p>把按钮等 UI 行为绑定到 VM 方法（示例 11）：</p>
+<pre><code>public class MainWindowViewModel : BindableBase
+{
+    private bool _isEnabled;
+    public bool IsEnabled
+    {
+        get =&gt; _isEnabled;
+        set { SetProperty(ref _isEnabled, value);
+              ExecuteDelegateCommand.RaiseCanExecuteChanged(); }   // 手动通知 CanExecute 变化
+    }
+
+    public DelegateCommand ExecuteDelegateCommand { get; private set; }
+    public DelegateCommand&lt;string&gt; ExecuteGenericDelegateCommand { get; private set; }
+    public DelegateCommand DelegateCommandObservesCanExecute { get; private set; }
+
+    public MainWindowViewModel()
+    {
+        // 标准：execute + canExecute
+        ExecuteDelegateCommand = new DelegateCommand(Execute, CanExecute);
+
+        // 监听某属性变化 → 自动重算 CanExecute（无需手动 RaiseCanExecuteChanged）
+        DelegateCommandObservesProperty = new DelegateCommand(Execute, CanExecute)
+                                            .ObservesProperty(() =&gt; IsEnabled);
+
+        // 直接用表达式作为 CanExecute
+        DelegateCommandObservesCanExecute = new DelegateCommand(Execute)
+                                            .ObservesCanExecute(() =&gt; IsEnabled);
+
+        // 泛型命令 + 监听
+        ExecuteGenericDelegateCommand = new DelegateCommand&lt;string&gt;(ExecuteGeneric)
+                                            .ObservesCanExecute(() =&gt; IsEnabled);
+    }
+    private void Execute() =&gt; UpdateText = $"Updated: {DateTime.Now}";
+    private void ExecuteGeneric(string p) =&gt; UpdateText = p;
+    private bool CanExecute() =&gt; IsEnabled;
+}</code></pre>
+<pre><code>&lt;!-- XAML 绑定示例（示例 11） --&gt;
+&lt;CheckBox IsChecked="{Binding IsEnabled}" Content="Can Execute Command"/&gt;
+&lt;Button Command="{Binding ExecuteDelegateCommand}" Content="DelegateCommand"/&gt;
+&lt;Button Command="{Binding ExecuteGenericDelegateCommand}" CommandParameter="Passed Parameter"
+        Content="DelegateCommand Generic"/&gt;</code></pre>
+<table>
+<tr><th>写法</th><th>说明</th></tr>
+<tr><td><code>new DelegateCommand(Execute, CanExecute)</code></td><td>带可执行条件；条件变时手动 <code>RaiseCanExecuteChanged()</code></td></tr>
+<tr><td><code>.ObservesProperty(() =&gt; Prop)</code></td><td>指定属性变化时自动重算 CanExecute</td></tr>
+<tr><td><code>.ObservesCanExecute(() =&gt; boolExpr)</code></td><td>直接用表达式作为 CanExecute（推荐）</td></tr>
+<tr><td><code>DelegateCommand&lt;T&gt;</code></td><td><code>CommandParameter</code> 自动转为 T</td></tr>
+</table>
+</section>
+
+<section id="ccmd">
+<h2>8. CompositeCommand 复合命令</h2>
+<p>把多个子命令聚合成一个“全局命令”（如工具栏「全部保存」），执行时逐个触发（示例 12）。</p>
+<pre><code>// 共享契约（放在 Core 项目）
+public interface IApplicationCommands { CompositeCommand SaveCommand { get; } }
+public class ApplicationCommands : IApplicationCommands
+{
+    private readonly CompositeCommand _saveCommand = new();
+    public CompositeCommand SaveCommand =&gt; _saveCommand;
+}
+
+// 子 VM 中：把自身命令注册进全局复合命令
+public class TabViewModel : BindableBase
+{
+    public DelegateCommand SaveCommand { get; }
+    public TabViewModel(IApplicationCommands appCommands)
+    {
+        SaveCommand = new DelegateCommand(Save);
+        appCommands.SaveCommand.RegisterCommand(SaveCommand);   // 注册
+        // appCommands.SaveCommand.UnregisterCommand(SaveCommand); // 销毁时反注册
+    }
+    private void Save() { /* ... */ }
+}</code></pre>
+<div class="note">把 <code>ApplicationCommands</code> 注册为单例（<code>RegisterSingleton</code> 或容器解析），各模块共享同一实例。配合 <strong>IActiveAware</strong>（示例 13）：子命令实现 <code>IActiveAware</code>，复合命令执行时<strong>只调用当前“活动”视图</strong>的命令，避免误保存未激活页。</div>
+</section>
+
+<section id="ea">
+<h2>9. EventAggregator 事件聚合（跨模块通信）</h2>
+<p>发布/订阅模式，默认弱引用，避免内存泄漏。自定义事件继承 <code>PubSubEvent&lt;T&gt;</code>（示例 14）：</p>
+<pre><code>// 1) 定义事件（共享/Core 项目）
+public class MessageSentEvent : PubSubEvent&lt;string&gt; { }
+
+// 2) 发布方（ModuleA）
+IEventAggregator _ea;
+public MessageViewModel(IEventAggregator ea) { _ea = ea; SendMessageCommand = new DelegateCommand(SendMessage); }
+private void SendMessage() =&gt; _ea.GetEvent&lt;MessageSentEvent&gt;().Publish(Message);
+
+// 3) 订阅方（ModuleB）
+public MessageListViewModel(IEventAggregator ea)
+{
+    _ea = ea;
+    Messages = new ObservableCollection&lt;string&gt;();
+    _ea.GetEvent&lt;MessageSentEvent&gt;().Subscribe(MessageReceived);
+}
+private void MessageReceived(string message) =&gt; Messages.Add(message);</code></pre>
+<h4>订阅高级选项：线程与过滤（示例 15）</h4>
+<pre><code>_ea.GetEvent&lt;MessageSentEvent&gt;().Subscribe(
+    MessageReceived,
+    ThreadOption.PublisherThread,     // 回调线程
+    keepSubscriberReferenceAlive: false,
+    filter: msg =&gt; msg.Contains("Brian")   // 仅接收满足条件的消息
+);</code></pre>
+<table>
+<tr><th><code>ThreadOption</code></th><th>含义</th></tr>
+<tr><td><code>PublisherThread</code></td><td>在发布者线程执行（默认）</td></tr>
+<tr><td><code>UIThread</code></td><td>切回 UI 线程（WPF 最常用，避免跨线程访问控件）</td></tr>
+<tr><td><code>BackgroundThread</code></td><td>线程池执行</td></tr>
+</table>
+<div class="tip">取消订阅：<code>_ea.GetEvent&lt;MessageSentEvent&gt;().Unsubscribe(MessageReceived)</code>。若用 <code>keepSubscriberReferenceAlive:true</code>，必须显式 <code>Unsubscribe</code> 否则泄漏。与你的 <code>WeakEventManager</code> 解耦模式可互补使用。</div>
+</section>
+
+<section id="region">
+<h2>10. Regions 区域</h2>
+<p>在 Shell/View 中声明命名区域，运行时动态注入视图。</p>
+<pre><code>&lt;ContentControl prism:RegionManager.RegionName="ContentRegion" /&gt;   &lt;!-- 单视图 --&gt;
+&lt;ItemsControl  prism:RegionManager.RegionName="TabRegion" /&gt;        &lt;!-- 多视图列表 --&gt;</code></pre>
+<table>
+<tr><th>注入方式</th><th>代码示例</th><th>示例</th></tr>
+<tr><td>View Discovery</td><td><code>regionManager.RegisterViewWithRegion("Region", typeof(ViewA));</code></td><td>04</td></tr>
+<tr><td>View Injection</td><td><code>var v = region.Add(view); region.Activate(v);</code></td><td>05</td></tr>
+<tr><td>Activation</td><td><code>region.Activate(viewA); region.Deactivate(viewB);</code></td><td>06</td></tr>
+<tr><td>自定义适配器</td><td>继承 <code>RegionAdapterBase&lt;T&gt;</code> 并注册</td><td>03</td></tr>
+</table>
+<h4>自定义区域适配器（示例 03：让 StackPanel 支持 Region）</h4>
+<pre><code>public class StackPanelRegionAdapter : RegionAdapterBase&lt;StackPanel&gt;
+{
+    public StackPanelRegionAdapter(IRegionBehaviorFactory f) : base(f) { }
+
+    protected override void Adapt(IRegion region, StackPanel target)
+    {
+        region.Views.CollectionChanged += (s, e) =&gt;
+        {
+            if (e.Action == NotifyCollectionChangedAction.Add)
+                foreach (FrameworkElement el in e.NewItems)
+                    target.Children.Add(el);
+            // 处理 Remove ...
+        };
+    }
+    protected override IRegion CreateRegion() =&gt; new AllActiveRegion();   // 全部激活
+}
+// 注册：在 App 中重写 ConfigureDefaultRegionBehaviors 或 App.xaml 合并字典里注册适配器</code></pre>
+</section>
+
+<section id="nav">
+<h2>11. Region Navigation 区域导航</h2>
+<p>用 <code>RequestNavigate</code> 在区域间切视图；目标 View/VM 实现 <code>INavigationAware</code> 参与生命周期（示例 17/19/21）。</p>
+<pre><code>// 发起导航（VM 中，示例 17）
+private readonly IRegionManager _regionManager;
+public DelegateCommand&lt;string&gt; NavigateCommand { get; }
+public MainWindowViewModel(IRegionManager rm)
+{
+    _regionManager = rm;
+    NavigateCommand = new DelegateCommand&lt;string&gt;(p =&gt; _regionManager.RequestNavigate("ContentRegion", p));
+}
+// XAML: &lt;Button Command="{Binding NavigateCommand}" CommandParameter="ViewA"&gt;Navigate to A&lt;/Button&gt;</code></pre>
+<h4>视图/VM 参与导航（INavigationAware，标准 API / 示例 19）</h4>
+<pre><code>public class ViewAViewModel : BindableBase, INavigationAware
+{
+    public void OnNavigatedTo(NavigationContext ctx)
+    {
+        var id = ctx.Parameters.GetValue&lt;int&gt;("id");   // 接收导航参数
+    }
+    public bool IsNavigationTarget(NavigationContext ctx) =&gt; true; // 是否复用同一实例
+    public void OnNavigatedFrom(NavigationContext ctx) { }          // 离开时保存状态
+}</code></pre>
+<table>
+<tr><th>主题</th><th>做法</th><th>示例</th></tr>
+<tr><td>传参</td><td><code>RequestNavigate("R","V", new NavigationParameters("id=5"))</code><br>或 <code>new NavigationParameters { { "id", 5 } }</code></td><td>21</td></tr>
+<tr><td>导航完成回调</td><td><code>RequestNavigate("R","V", r =&gt; { if(r.Result==null) ... });</code></td><td>18</td></tr>
+<tr><td>复用/新建视图</td><td><code>IsNavigationTarget</code> 返回 true=复用，false=新建（示例 20 控制实例）</td><td>20</td></tr>
+<tr><td>确认/取消</td><td>VM 实现 <code>IConfirmNavigationRequest.ConfirmNavigationRequest(ctx, cb)</code>，<code>cb(false)</code> 可取消</td><td>22</td></tr>
+<tr><td>生命周期</td><td>VM 实现 <code>IRegionMemberLifetime.KeepAlive</code> 控制离开后是否保留在内存</td><td>23</td></tr>
+<tr><td>前进/后退（Journal）</td><td><code>region.NavigationService.Journal.GoBack()/GoForward()</code></td><td>24</td></tr>
+</table>
+<div class="note">导航参数读取：<code>ctx.Parameters.GetValue&lt;T&gt;("key")</code>。复杂对象可直接传实例（<code>new NavigationParameters { {"model", obj} }</code>）。</div>
+</section>
+
+<section id="module">
+<h2>12. Modules 模块化</h2>
+<p>把功能拆成 <code>IModule</code>（独立程序集、可插拔）。完整示例（14 ModuleA 用 Discovery 把视图注册到区域）：</p>
+<pre><code>public class ModuleAModule : IModule
+{
+    public void OnInitialized(IContainerProvider containerProvider)
+    {
+        var regionManager = containerProvider.Resolve&lt;IRegionManager&gt;();
+        regionManager.RegisterViewWithRegion("LeftRegion", typeof(MessageView));
+    }
+    public void RegisterTypes(IContainerRegistry containerRegistry) { /* 注册本模块服务 */ }
+}</code></pre>
+<h4>四种模块加载方式（示例 07）</h4>
+<table>
+<tr><th>方式</th><th>代码 / 配置</th><th>示例</th></tr>
+<tr><td>代码</td><td><code>ConfigureModuleCatalog</code> → <code>moduleCatalog.AddModule&lt;ModuleAModule&gt;()</code></td><td>07-Code</td></tr>
+<tr><td>App.config</td><td><code>&lt;modules&gt;&lt;module assemblyFile=".." moduleType=".." moduleName="ModuleA"/&gt;</code></td><td>07-AppConfig</td></tr>
+<tr><td>目录</td><td><code>moduleCatalog.AddModuleDirectory("Modules");</code></td><td>07-Directory</td></tr>
+<tr><td>手动</td><td><code>containerProvider.Resolve&lt;IModuleManager&gt;().LoadModule("ModuleA");</code></td><td>07-LoadManual</td></tr>
+</table>
+<div class="tip">模块依赖：<code>moduleCatalog.AddModule&lt;ModuleB&gt;().AddModule&lt;ModuleA&gt;()</code> 表示 B 依赖 A（先加载 A）。模块适合把大型系统按业务拆分（如你的上料/视觉/运控模块），主壳只负责组合。</div>
+</section>
+
+<section id="dialog">
+<h2>13. DialogService 对话框</h2>
+<p>统一的模态弹窗服务；对话框本体是 <code>UserControl</code>，由 DialogService 自动包进 Window（示例 26）。</p>
+<h4>① 注册（App.RegisterTypes）</h4>
+<pre><code>containerRegistry.RegisterDialog&lt;NotificationDialog, NotificationDialogViewModel&gt;();</code></pre>
+<h4>② 调用（VM 中）</h4>
+<pre><code>private readonly IDialogService _dialogService;
+public MainWindowViewModel(IDialogService dialogService) =&gt; _dialogService = dialogService;
+
+private void ShowDialog()
+{
+    var message = "This is a message that should be shown in the dialog.";
+    _dialogService.ShowDialog("NotificationDialog",
+        new DialogParameters($"message={message}"),
+        r =&gt;
+        {
+            if (r.Result == ButtonResult.OK) Title = "Result is OK";
+            else if (r.Result == ButtonResult.Cancel) Title = "Result is Cancel";
+            else Title = "Result is None";
+        });
+}</code></pre>
+<h4>③ 对话框 XAML（绑定 VM 命令关闭）</h4>
+<pre><code>&lt;UserControl ... prism:ViewModelLocator.AutoWireViewModel="True" Width="300" Height="150"&gt;
+  &lt;Grid Margin="5"&gt;
+    &lt;TextBlock Text="{Binding Message}" Grid.Row="0" TextWrapping="Wrap"/&gt;
+    &lt;StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Grid.Row="1"&gt;
+      &lt;Button Command="{Binding CloseDialogCommand}" CommandParameter="true"
+              Content="OK" IsDefault="True"/&gt;
+      &lt;Button Command="{Binding CloseDialogCommand}" CommandParameter="false"
+              Content="Cancel" IsCancel="True"/&gt;
+    &lt;/StackPanel&gt;
+  &lt;/Grid&gt;
+&lt;/UserControl&gt;</code></pre>
+<h4>④ 实现 IDialogAware（对话框 VM）</h4>
+<pre><code>public class NotificationDialogViewModel : BindableBase, IDialogAware
+{
+    public string Message { get =&gt; _message; set =&gt; SetProperty(ref _message, value); }
+    public DialogCloseListener RequestClose { get; }
+
+    public virtual void OnDialogOpened(IDialogParameters parameters)
+        =&gt; Message = parameters.GetValue&lt;string&gt;("message");   // 接收参数
+
+    public virtual bool CanCloseDialog() =&gt; true;             // 是否允许关闭
+    public virtual void OnDialogClosed() { }                   // 关闭后清理
+
+    protected virtual void CloseDialog(string parameter)
+    {
+        var result = parameter?.ToLower() == "true" ? ButtonResult.OK : ButtonResult.Cancel;
+        RequestClose.Invoke(new DialogResult(result));         // 关闭并回传结果
+    }
+    // XAML 中 CloseDialogCommand 调用 CloseDialog(string)
+}</code></pre>
+<table>
+<tr><th>成员</th><th>作用</th></tr>
+<tr><td><code>OnDialogOpened(params)</code></td><td>打开时接收 <code>DialogParameters</code></td></tr>
+<tr><td><code>CanCloseDialog()</code></td><td>返回 false 时窗口不可关</td></tr>
+<tr><td><code>OnDialogClosed()</code></td><td>关闭后释放资源</td></tr>
+<tr><td><code>RequestClose.Invoke(result)</code></td><td>主动关闭并回传 <code>IDialogResult</code></td></tr>
+</table>
+<p class="mini">命名空间为 <code>Prism.Dialogs</code>（Prism 8/9）。<code>ButtonResult</code>：None / OK / Cancel / Yes / No。<code>Show</code> 为非模态，<code>ShowDialog</code> 为模态。样式/自定义窗口见示例 27/28。</p>
+</section>
+
+<section id="inter">
+<h2>14. Interactivity 交互行为</h2>
+<p>用 <code>prism:InvokeCommandAction</code> 把任意路由事件映射到 VM 命令，无需 code-behind（示例 29）：</p>
+<pre><code>&lt;Button&gt;
+  &lt;i:Interaction.Triggers&gt;
+    &lt;i:EventTrigger EventName="MouseEnter"&gt;
+      &lt;prism:InvokeCommandAction Command="{Binding MyCommand}"
+                                  CommandParameter="{Binding ...}"/&gt;
+    &lt;/i:EventTrigger&gt;
+  &lt;/i:Interaction.Triggers&gt;
+&lt;/Button&gt;</code></pre>
+<div class="tip">与 <code>DelegateCommand</code> 配合，可把双击、鼠标进入、SelectionChanged 等事件都转成命令，保持 View 无逻辑。</div>
+</section>
+
+<section id="di">
+<h2>15. 依赖注入与容器</h2>
+<p>所有服务/VM 通过构造函数注入，注册集中在 <code>RegisterTypes</code>：</p>
+<pre><code>protected override void RegisterTypes(IContainerRegistry c)
+{
+    c.Register&lt;IMyService, MyService&gt;();           // 瞬态（每次解析新建）
+    c.RegisterSingleton&lt;IAppState, AppState&gt;();     // 单例（全局共享，如 ApplicationCommands）
+    c.RegisterScoped&lt;IUnitOfWork, UnitOfWork&gt;();    // 作用域（视容器支持）
+    c.RegisterDialog&lt;MyDialog, MyDialogViewModel&gt;();
+}
+// 解析：Container.Resolve&lt;T&gt;()；构造函数参数由容器自动注入</code></pre>
+<p class="mini">容器抽象接口 <code>IContainerRegistry</code>（注册）与 <code>IContainerProvider</code>（解析）。Unity / DryIoc 均实现，API 一致。模块内也可在 <code>RegisterTypes(IContainerRegistry)</code> 注册自己的服务。</p>
+</section>
+
+<section id="struct">
+<h2>16. 推荐目录结构（结合你的 ABP+Prism 分层）</h2>
+<pre><code>Solution/                 (根：Xxx.slnx + Directory.Build.props + Directory.Packages.props)
+├─ src/
+│  ├─ MyApp.Wpf/          (组合根，引用所有层；CreateShell、RegisterTypes)
+│  ├─ MyApp.Application/  (契约/服务接口 IMyService)
+│  ├─ MyApp.Infrastructure/(实现 MyService)
+│  └─ MyApp.Domain/       (领域模型)
+└─ modules/ (可选)         (各 IModule 独立程序集)</code></pre>
+<div class="note">按你的项目约定：类库目标框架用 <code>netX.0</code>（无 <code>-windows</code>），仅 WPF 应用用 <code>netX.0-windows</code>；启用中央包管理器（CPM）；命名空间跟随程序集。组合根 <code>MyApp.Wpf</code> 可直接引用所有层，模块通过 <code>IModule</code> 解耦。</div>
+</section>
+
+<section id="tips">
+<h2>17. 最佳实践与常见陷阱</h2>
+<table>
+<tr><th>要点</th><th>建议</th></tr>
+<tr><td>启动方式</td><td>新项目统一用 <code>PrismApplication</code>，不要混用旧 Bootstrapper</td></tr>
+<tr><td>VM 绑定</td><td>优先用 <code>AutoWireViewModel="True"</code>；非常规命名再改约定或手动注册</td></tr>
+<tr><td>CanExecute</td><td>优先 <code>ObservesCanExecute(() =&gt; ...)</code>，避免忘记 <code>RaiseCanExecuteChanged</code></td></tr>
+<tr><td>跨模块通信</td><td>事件聚合用 <code>PubSubEvent&lt;T&gt;</code>；UI 线程回调务必 <code>ThreadOption.UIThread</code></td></tr>
+<tr><td>事件注销</td><td><code>keepSubscriberReferenceAlive:true</code> 时必须显式 <code>Unsubscribe</code></td></tr>
+<tr><td>导航</td><td>接收参数用 <code>INavigationAware</code>；需要“确认离开”实现 <code>IConfirmNavigationRequest</code></td></tr>
+<tr><td>对话框</td><td>VM 实现 <code>IDialogAware</code>，结果经 <code>RequestClose</code> 回传，调用方读 <code>r.Result</code></td></tr>
+<tr><td>模块</td><td>大型系统按业务拆 <code>IModule</code>；主壳只组合，不写业务</td></tr>
+<tr><td>依赖</td><td>服务注册集中到 <code>RegisterTypes</code>；单例慎用（注意线程与状态）</td></tr>
+<tr><td>包版本</td><td>只装稳定版，禁止 preview/alpha/beta/rc</td></tr>
+</table>
+<p class="mini">资料来源：PrismLibrary/Prism（README、NuGet 包说明）、Prism-Samples-Wpf（01/03/07/08/09/10/11/12/14/15/17/19/21/26 等示例真实源码）。</p>
+</section>
+
+</main>
+</div>
+</body>
+</html>
