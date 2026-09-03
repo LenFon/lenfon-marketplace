@@ -64,7 +64,7 @@ templates/
     │   ├── App.GlobalException.cs    # 全局异常三钩子
     │   ├── Views/Shell.xaml(.cs)     # 主窗口（Shell）：AutoWireViewModel=True 注入 ShellViewModel，含 ContentRegion + 状态栏
     │   ├── Views/MainView.xaml(.cs)  # 主内容视图（区域导航加载到 ContentRegion）
-    │   └── ViewModels/               # ShellViewModel（无 DI，无 .Design.cs）+ MainViewViewModel（分部属性 + RelayCommand + 设计器构造）
+    │   └── ViewModels/               # ShellViewModel（IRegionManager 依赖，配 ShellViewModel.Design.cs，实现 IInitialize 导航）+ MainViewViewModel（分部属性 + RelayCommand + INavigationAware + 设计器构造）
     ├── __APP_NAME__.Domain/          # 领域模型（MessageItem 示例）
     ├── __APP_NAME__.Application/     # 契约（IMessageService 示例）
     └── __APP_NAME__.Infrastructure/  # 实现（MessageService 示例）

@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.Input;
 using System.Collections.ObjectModel;
 using __APP_NAME__.Domain.Models;
 using __APP_NAME__.Application.Services;
+using Prism.Navigation.Regions;
 
 namespace __APP_NAME__.ViewModels;
 
@@ -16,7 +17,7 @@ namespace __APP_NAME__.ViewModels;
 /// 由 CommunityToolkit.Mvvm 源生成器产出实现声明（SetProperty + 双向通知），
 /// 因此不再需要手工维护 _xxx 支持字段。
 /// </remarks>
-public partial class MainViewViewModel : ObservableObject
+public partial class MainViewViewModel : ObservableObject, INavigationAware
 {
     private readonly IMessageService _messageService;
 
@@ -113,4 +114,17 @@ public partial class MainViewViewModel : ObservableObject
     private void UpdateStatus() => StatusText = SelectedMessage is null
         ? $"共 {Messages.Count} 条消息"
         : $"共 {Messages.Count} 条消息 · 已选中「{SelectedMessage.Content}」";
+
+    #region 导航（INavigationAware）
+
+    /// <summary>同一导航目标复用当前实例，不重建。</summary>
+    public bool IsNavigationTarget(NavigationContext navigationContext) => true;
+
+    /// <summary>离开该视图时调用；此处无需资源清理。</summary>
+    public void OnNavigatedFrom(NavigationContext navigationContext) { }
+
+    /// <summary>导航进入该视图时调用；此处刷新状态文本（示例）。</summary>
+    public void OnNavigatedTo(NavigationContext navigationContext) => UpdateStatus();
+
+    #endregion
 }

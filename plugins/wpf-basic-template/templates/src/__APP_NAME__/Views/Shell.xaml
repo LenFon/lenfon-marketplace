@@ -19,7 +19,7 @@
         WindowStartupLocation="CenterScreen">
 
     <DockPanel LastChildFill="True">
-        <!-- 主内容区域：由 App.OnInitialized 通过 Prism 区域导航加载 MainView（导航 URI = "MainView"）。 -->
+        <!-- 主内容区域：由 ShellViewModel.Initialize() 通过 Prism 区域导航加载 MainView（导航 URI = "MainView"）。 -->
         <ContentControl DockPanel.Dock="Top"
                         prism:RegionManager.RegionName="ContentRegion" />
 

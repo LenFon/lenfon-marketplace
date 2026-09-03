@@ -203,7 +203,7 @@ MainView mv = Container.Resolve<MainView>();
 
 - `App.xaml` 根元素必须是 `prism:PrismApplication`，**不写 `StartupUri`**、不在 `App()` 里调 `Initialize()`（基类自动完成）。
 - `CreateShell()` 在 Prism 9 返回 `Window`：`protected override Window CreateShell()`。
-- **Shell 自带视图模型**：`Shell.xaml` 设 `prism:ViewModelLocator.AutoWireViewModel="True"`，由 Prism 按命名约定自动装配 `ShellViewModel`（Views.Shell -> ViewModels.ShellViewModel），承载应用级状态（标题 / 状态栏等）；`ShellViewModel` 无构造依赖，无需 `.Design.cs` 分部类，XAML 直接 `d:DesignInstance IsDesignTimeCreatable=True`。
+- **Shell 自带视图模型**：`Shell.xaml` 设 `prism:ViewModelLocator.AutoWireViewModel="True"`，由 Prism 按命名约定自动装配 `ShellViewModel`（Views.Shell -> ViewModels.ShellViewModel），承载应用级状态（标题 / 状态栏等）；`ShellViewModel` 依赖 `IRegionManager`（DI 注入），提供 `ShellViewModel.Design.cs` 设计器无参构造，XAML 直接 `d:DesignInstance IsDesignTimeCreatable=True`。
 - 主内容通过 `ContentRegion` 区域导航加载 `MainView`：`RegisterTypes` 里 `containerRegistry.RegisterForNavigation<MainView>()`，`OnInitialized` 里 `regionManager.RequestNavigate("ContentRegion", "MainView")`。
 - 契约注册在 `RegisterTypes`：`containerRegistry.RegisterSingleton<IMessageService, MessageService>();`
 
@@ -375,7 +375,7 @@ dotnet build --no-restore -p:UseSharedCompilation=false -p:EnableDefaultPageItem
 
 **交付时告知用户**：本沙箱无法完整 build/运行 WPF，最终构建在 VS 中做。
 
-## 七、模板文件清单（templates/ 下 24 个）
+## 七、模板文件清单（templates/ 下 25 个）
 
 | 文件 | 说明 |
 |---|---|
@@ -390,8 +390,9 @@ dotnet build --no-restore -p:UseSharedCompilation=false -p:EnableDefaultPageItem
 | `src/__APP_NAME__/Resources/Converters.xaml` | 共享值转换器字典（App.xaml 全局合并，View 用 `StaticResource`） |
 | `src/__APP_NAME__/Views/Shell.xaml` / `.cs` | 主窗口（Shell），`AutoWireViewModel=True` 自动装配 `ShellViewModel`；含 `ContentRegion` + 状态栏 |
 | `src/__APP_NAME__/Views/MainView.xaml` / `.cs` | 主内容视图（区域导航加载到 `ContentRegion`） |
-| `src/__APP_NAME__/ViewModels/ShellViewModel.cs` | Shell 视图模型：应用级状态（标题 / 状态栏），C# 13 分部属性；无构造依赖故无 `.Design.cs` |
-| `src/__APP_NAME__/ViewModels/MainViewViewModel.cs` | `[ObservableProperty]` 全量分部属性 + RelayCommand 示例 |
+| `src/__APP_NAME__/ViewModels/ShellViewModel.cs` | Shell 视图模型：应用级状态 + 实现 `IInitialize` 在 `Initialize()` 中导航加载 MainView；依赖 `IRegionManager`，配 `ShellViewModel.Design.cs` |
+| `src/__APP_NAME__/ViewModels/ShellViewModel.Design.cs` | 设计器专用无参构造（对应 `IRegionManager` 依赖） |
+| `src/__APP_NAME__/ViewModels/MainViewViewModel.cs` | `[ObservableProperty]` 全量分部属性 + RelayCommand 示例；实现 `INavigationAware`（导航页 ViewModel 标准做法） |
 | `src/__APP_NAME__/ViewModels/MainViewViewModel.Design.cs` | 设计器专用无参构造 + 示例数据 |
 | `src/__APP_NAME__.Domain/*` | csproj + `MessageItem.cs` + `MessageItem.Impl.cs` |
 | `src/__APP_NAME__.Application/*` | csproj + `IMessageService.cs` |

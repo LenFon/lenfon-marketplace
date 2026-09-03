@@ -45,17 +45,8 @@ public partial class App : PrismApplication
     protected override void RegisterTypes(IContainerRegistry containerRegistry)
     {
         containerRegistry.RegisterSingleton<IMessageService, MessageService>();
-        // 注册 MainView 为可导航视图（导航 URI = "MainView"）
+        // 注册 MainView 为可导航视图（导航 URI = "MainView"）；
+        // 实际导航由 ShellViewModel.Initialize() 在 Shell 就绪后发起。
         containerRegistry.RegisterForNavigation<MainView>();
-    }
-
-    /// <summary>
-    /// 初始化完成后，将 MainView 导航到 Shell 的 ContentRegion。
-    /// 须在 base.OnInitialized() 之后执行（Prism 先完成 Shell 与区域注册）。
-    /// </summary>
-    protected override void OnInitialized()
-    {
-        base.OnInitialized();
-        Container.Resolve<IRegionManager>().RequestNavigate("ContentRegion", "MainView");
     }
 }
