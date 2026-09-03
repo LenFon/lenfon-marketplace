@@ -304,7 +304,7 @@ fi
 
 - 安装成功后用 Skill 工具加载 `material-design-styles` 再写 XAML。
 - **默认设计语言为 MD3**：命名样式选型优先取 `MaterialDesignTheme.*` 共用键（MD2/MD3 共享基础），MD3 专属组件用 `MaterialDesign3.*` 键；不要用 v4.x 旧键名（见 material-design-styles 技能「已废弃」清单）。
-- 技能市场归属：`lenfon-marketplace`（上游源仓库 `https://github.com/LenFon/material-design-styles`，仅供溯源参考，安装请走市场）。
+- 技能市场归属：`lenfon-marketplace`（市场仓库 `https://github.com/LenFon/lenfon-marketplace`，插件位于其 `plugins/material-design-styles` 子目录，安装请走市场）。
 
 ### 值转换器（强制）
 
