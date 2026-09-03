@@ -62,9 +62,9 @@ templates/
     ├── __APP_NAME__/                 # WPF 应用（Prism 引导 + MD3 主题 + Serilog）
     │   ├── App.xaml(.cs)             # Prism + DI 容器
     │   ├── App.GlobalException.cs    # 全局异常三钩子
-    │   ├── Views/Shell.xaml(.cs)     # 主窗口（导航容器，含 ContentRegion）
-    │   ├── Views/MainView.xaml(.cs)  # 主内容视图（区域导航加载）
-    │   └── ViewModels/               # 分部属性 + RelayCommand + 设计器构造
+    │   ├── Views/Shell.xaml(.cs)     # 主窗口（Shell）：AutoWireViewModel=True 注入 ShellViewModel，含 ContentRegion + 状态栏
+    │   ├── Views/MainView.xaml(.cs)  # 主内容视图（区域导航加载到 ContentRegion）
+    │   └── ViewModels/               # ShellViewModel（无 DI，无 .Design.cs）+ MainViewViewModel（分部属性 + RelayCommand + 设计器构造）
     ├── __APP_NAME__.Domain/          # 领域模型（MessageItem 示例）
     ├── __APP_NAME__.Application/     # 契约（IMessageService 示例）
     └── __APP_NAME__.Infrastructure/  # 实现（MessageService 示例）
