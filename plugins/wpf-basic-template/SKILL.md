@@ -12,7 +12,7 @@ lenfon 于 2026-09-01 确立的个人标准模板。新建 WPF 项目一律照�
 
 1. 复制 `assets/` 下 25 个文件到新解决方案目录（清单见 `references/06-assets-manifest.md`）。
 2. 把占位符 `__APP_NAME__` 全局替换为实际项目名（文件名与文件内容都要替换）。
-3. 核对 `Directory.Packages.props` 的包版本为 nuget.org 最新**稳定版**（包表见 `references/01-project-layout.md`）。
+3. 核对 `Directory.Packages.props` 的包版本为 nuget.org 最新**稳定版**（包表见 `references/01-project-layout.md`）：直接运行 `python scripts/check-package-versions.py <项目根>/Directory.Packages.props`（纯标准库，逐包查询 + 成对包版本一致性校验；退出码 0=全部最新 1=存在可升级 2=出错）。
 4. 直接用 .NET SDK 还原包并编译生成的项目：`dotnet restore && dotnet build --no-restore`，迭代修复到 **0 错 0 警**（验证细则见 `references/05-build-verification.md`）。宿主 shell 若报 `Value cannot be null. (Parameter 'path1')`，是缺 `APPDATA`/`PROGRAMFILES`、`HOME` 为 POSIX 路径所致，解法见 `references/04-pitfalls.md`。
 5. 新增 View / ViewModel 时套用 `references/03-prism-and-ui.md` 与 `references/02-code-style.md` 的写法。
 
@@ -73,6 +73,7 @@ for p in pathlib.Path('.').rglob('*'):
 | `references/04-pitfalls.md` | 已踩坑位与解法（Prism 9 命名空间、CA1416、DLP 加密、git push 挂起等） |
 | `references/05-build-verification.md` | 直接用 .NET SDK `dotnet restore && dotnet build` 验证编译 0 错要求 |
 | `references/06-assets-manifest.md` | 模板文件清单 + 技能维护约定 |
+| `scripts/check-package-versions.py` | CPM 包版本核对脚本（逐包查 nuget.org 最新稳定版 + 成对包一致性校验，纯标准库） |
 | `assets/` | 25 个可直接拷贝的模板文件（slnx / 两个 props / nuget.config / src 四层） |
 
 ## 依赖技能
