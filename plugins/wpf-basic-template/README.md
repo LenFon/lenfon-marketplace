@@ -16,6 +16,7 @@ WorkBuddy 技能：**WPF 标准解决方案脚手架**（含 25 个可拷贝模�
 | 日志 | Serilog + Serilog.Sinks.File，全局异常三钩子 |
 | 设计时 | 所有 View 根元素强制 `d:DataContext` 设计时绑定（含设计器专用无参构造分部类） |
 | 质量 | 两轮编译验证 0 错 0 警（XAML 侧 + 纯 C# 侧） |
+| 版本核对 | 附 `scripts/check-package-versions.py`：逐包核对 nuget.org 最新稳定版 + 成对包一致性校验，纯标准库，退出码 0/1/2 |
 
 ## 安装方式
 
@@ -82,6 +83,8 @@ assets/
 ## 坑位清单（已沉淀进 references/04-pitfalls.md）
 
 - Prism 9 命名空间重组：Region 类型在 `Prism.Navigation.Regions`，`NavigationParameters` 在 `Prism.Navigation`
+- DI 注入字段须在 `XxxViewModel.Design.cs` 设计器无参构造首行写 `_xxx = null!;` 占位，否则编译必报 CS8618
+- 宿主 shell 缺 `APPDATA`/`PROGRAMFILES`、`HOME` 为 POSIX 路径时 restore 报 `Value cannot be null. (Parameter 'path1')`，用 `env` 前缀注入（`HOME` 必须写 Windows 反斜杠路径）
 - Material Design 5 无 `ProgressRing` 控件，用标准 `ProgressBar` + `MaterialDesignCircularProgressBar` 样式
 - 密码绑定用 MD 官方附加属性 `PasswordBoxAssist.Password`（双向写回）
 - 编译验证直接用 .NET SDK 跑通（`dotnet restore && dotnet build`），要求 0 错 0 警
