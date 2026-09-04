@@ -2,11 +2,11 @@
 
 **生成项目后，必须实际跑通编译；只要存在编译错误，就进入「定位 → 修复 → 复编」循环，直到 0 错误为止。绝不中途交付「大概能编过」的产物。**
 
-直接用 .NET SDK 还原包并编译生成的项目进行验证，无需任何额外绕行手段：
+直接用 .NET SDK 还原包并编译生成的项目进行验证，无需任何额外绕行手段。**Git Bash / PowerShell 宿主下必须带 env 前缀**（`HOME` 用 Windows 反斜杠路径），否则首次 restore 必报 `Value cannot be null. (Parameter 'path1')`（根因见 `04-pitfalls.md`）：
 
 ```bash
-dotnet restore
-dotnet build --no-restore
+env APPDATA='C:\Users\<用户>\AppData\Roaming' HOME='C:\Users\<用户>' PROGRAMFILES='C:\Program Files' dotnet restore
+env APPDATA='C:\Users\<用户>\AppData\Roaming' HOME='C:\Users\<用户>' PROGRAMFILES='C:\Program Files' dotnet build --no-restore
 ```
 
 - 报错即修：逐条读错误（CSxxxx / MCxxxx / 警告升错误），定位文件与行号，修复后**重新完整构建**验证，不得只修不复编。

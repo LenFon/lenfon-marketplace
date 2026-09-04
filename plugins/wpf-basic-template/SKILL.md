@@ -13,7 +13,7 @@ lenfon 于 2026-09-01 确立的个人标准模板。新建 WPF 项目一律照�
 1. 复制 `assets/` 下 25 个文件到新解决方案目录（清单见 `references/06-assets-manifest.md`）。
 2. 把占位符 `__APP_NAME__` 全局替换为实际项目名（文件名与文件内容都要替换）。
 3. 核对 `Directory.Packages.props` 的包版本为 nuget.org 最新**稳定版**（包表见 `references/01-project-layout.md`）：直接运行 `python scripts/check-package-versions.py <项目根>/Directory.Packages.props`（纯标准库，逐包查询 + 成对包版本一致性校验；退出码 0=全部最新 1=存在可升级 2=出错）。
-4. 直接用 .NET SDK 还原包并编译生成的项目：`dotnet restore && dotnet build --no-restore`，迭代修复到 **0 错 0 警**（验证细则见 `references/05-build-verification.md`）。宿主 shell 若报 `Value cannot be null. (Parameter 'path1')`，是缺 `APPDATA`/`PROGRAMFILES`、`HOME` 为 POSIX 路径所致，解法见 `references/04-pitfalls.md`。
+4. 直接用 .NET SDK 还原包并编译生成的项目：`dotnet restore && dotnet build --no-restore`，迭代修复到 **0 错 0 警**（验证细则见 `references/05-build-verification.md`）。**Git Bash / PowerShell 宿主下首次 restore 必报 `path1` null**，直接带 env 前缀执行（`HOME` 须为 Windows 反斜杠路径，详见 `references/04-pitfalls.md`）：`env APPDATA='C:\Users\<用户>\AppData\Roaming' HOME='C:\Users\<用户>' PROGRAMFILES='C:\Program Files' dotnet restore`。
 5. 新增 View / ViewModel 时套用 `references/03-prism-and-ui.md` 与 `references/02-code-style.md` 的写法。
 
 替换占位符（Python；读 `utf-8-sig` 吞模板残留 BOM，写 `utf-8` 无 BOM）：
@@ -61,7 +61,7 @@ for p in pathlib.Path('.').rglob('*'):
 | XAML 跨 DLL 命名空间 | 写成 `clr-namespace:X;assembly=Y`，同程序集不带 assembly | `03-prism-and-ui.md` |
 | 转换器 | 优先用 `ValueConverters` 包，统一注册到 `Resources/Converters.xaml`，禁 View 内联定义 | `03-prism-and-ui.md` |
 | 异常 | ViewModel 内不 try-catch，异常冒泡到全局三钩子收口 | `03-prism-and-ui.md` |
-| 编译 | 必须 0 错 0 警；直接用 .NET SDK `dotnet restore && dotnet build` 验证 | `05-build-verification.md` |
+| 编译 | 必须 0 错 0 警；直接用 .NET SDK `dotnet restore && dotnet build` 验证（Git Bash / PowerShell 下 restore 须带 env 前缀，见快速流程第 4 步） | `05-build-verification.md` |
 
 ## 资源索引
 
