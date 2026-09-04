@@ -13,7 +13,7 @@ lenfon 于 2026-09-01 确立的个人标准模板。新建 WPF 项目一律照�
 1. 复制 `assets/` 下 25 个文件到新解决方案目录（清单见 `references/06-assets-manifest.md`）。
 2. 把占位符 `__APP_NAME__` 全局替换为实际项目名（文件名与文件内容都要替换）。
 3. 核对 `Directory.Packages.props` 的包版本为 nuget.org 最新**稳定版**（包表见 `references/01-project-layout.md`）。
-4. 直接用 .NET SDK 还原包并编译生成的项目：`dotnet restore && dotnet build --no-restore`，迭代修复到 **0 错 0 警**（验证细则见 `references/05-build-verification.md`）。
+4. 直接用 .NET SDK 还原包并编译生成的项目：`dotnet restore && dotnet build --no-restore`，迭代修复到 **0 错 0 警**（验证细则见 `references/05-build-verification.md`）。宿主 shell 若报 `Value cannot be null. (Parameter 'path1')`，是缺 `APPDATA`/`PROGRAMFILES`、`HOME` 为 POSIX 路径所致，解法见 `references/04-pitfalls.md`。
 5. 新增 View / ViewModel 时套用 `references/03-prism-and-ui.md` 与 `references/02-code-style.md` 的写法。
 
 替换占位符（Python；读 `utf-8-sig` 吞模板残留 BOM，写 `utf-8` 无 BOM）：
@@ -57,7 +57,7 @@ for p in pathlib.Path('.').rglob('*'):
 | 线程锁 | `System.Threading.Lock`（net9+） | `02-code-style.md` |
 | Prism | `Prism.Wpf` + `Prism.DryIoc` 版本严格一致；Region 类型在 `Prism.Navigation.Regions` | `03-prism-and-ui.md`、`04-pitfalls.md` |
 | 主题 | 默认 MD3（`MaterialDesign3.Defaults.xaml`）+ `MahAppsBundledTheme`（Shell 用 MetroWindow） | `03-prism-and-ui.md` |
-| View | 根元素必做设计时绑定 `d:DataContext` + `mc:Ignorable="d"`；VM 有 DI 依赖补 `XxxViewModel.Design.cs` | `03-prism-and-ui.md` |
+| View | 根元素必做设计时绑定 `d:DataContext` + `mc:Ignorable="d"`；VM 有 DI 依赖补 `XxxViewModel.Design.cs`，并在其设计器无参构造首行给注入字段 `_xxx = null!;` 占位（否则 CS8618，破坏 0 警） | `03-prism-and-ui.md` |
 | XAML 跨 DLL 命名空间 | 写成 `clr-namespace:X;assembly=Y`，同程序集不带 assembly | `03-prism-and-ui.md` |
 | 转换器 | 优先用 `ValueConverters` 包，统一注册到 `Resources/Converters.xaml`，禁 View 内联定义 | `03-prism-and-ui.md` |
 | 异常 | ViewModel 内不 try-catch，异常冒泡到全局三钩子收口 | `03-prism-and-ui.md` |

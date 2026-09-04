@@ -20,6 +20,7 @@ namespace __APP_NAME__.ViewModels;
 /// </remarks>
 public partial class ShellViewModel : ObservableObject
 {
+    // 运行时由 Prism 容器注入；设计器专用无参构造（Design.cs）中以 null! 占位
     private readonly IRegionManager _regionManager;
 
     public ShellViewModel(IRegionManager regionManager)
