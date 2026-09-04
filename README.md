@@ -14,7 +14,7 @@ lenfon 的个人 WorkBuddy 用户市场，收录 WPF/.NET 桌面开发方向的�
 | 插件 | 版本 | 方向 | 说明 |
 |---|---|---|---|
 | `material-design-styles` | 1.0.0 | WPF 样式 | MaterialDesignInXamlToolkit 命名样式参考与 WPF 控件样式选型指南（基于最新稳定版 v5.3.2）。 |
-| `wpf-basic-template` | 1.4.1 | WPF 脚手架 | 用户标准化 WPF 脚手架（Prism 9 + Material Design 5【默认 MD3 样式】+ CommunityToolkit.Mvvm + CPM + slnx + src 分层），附包版本核对脚本（逐包查 nuget.org 最新稳定版 + 成对包一致性校验）。 |
+| `wpf-basic-template` | 1.5.0 | WPF 脚手架 | 用户标准化 WPF 一键脚手架（Prism 9 + Material Design 5【默认 MD3 样式】+ CommunityToolkit.Mvvm + CPM + slnx + src 分层）：`scripts/scaffold.py` 一条命令完成模板拷贝（26 个文件，含 .gitignore）→ 占位符替换 → git init + 首次提交（跨平台纯标准库），另附包版本核对脚本（逐包查 nuget.org 最新稳定版 + 成对包一致性校验）。 |
 | `prism-assistant` | 1.0.0 | Prism 参考 | Prism for WPF 使用参考助手：基于官方 PrismLibrary/Prism 与 Prism-Samples-Wpf 示例归纳的 MVVM / 导航 / 模块 / 对话框 / 事件聚合真实用法与避坑清单。 |
 
 ## 技能编写规范
@@ -91,13 +91,13 @@ lenfon-marketplace/            # 即 GitHub 仓库根，clone 后即为市场
     │   ├── SKILL.md
     │   ├── README.md
     │   └── references/       # MD样式分类清单.md + 维护与月度更新.md
-    ├── wpf-basic-template/       # 插件：用户标准化 WPF 脚手架
+    ├── wpf-basic-template/       # 插件：用户标准化 WPF 脚手架（v1.5.0）
     │   ├── .codebuddy-plugin/plugin.json
     │   ├── SKILL.md
     │   ├── README.md
     │   ├── references/       # 6 篇：布局/代码风格/Prism 与 UI/坑位/编译验证/模板清单
-    │   ├── scripts/          # check-package-versions.py（CPM 包版本核对，纯标准库）
-    │   └── assets/           # 全套模板文件（slnx/分层 src/...）
+    │   ├── scripts/          # scaffold.py（一键脚手架，跨平台纯标准库）+ check-package-versions.py（CPM 包版本核对）
+    │   └── assets/           # 全套模板文件（slnx/分层 src/.gitignore/...，26 个）
     └── prism-assistant/         # 插件：Prism for WPF 使用参考助手
         ├── .codebuddy-plugin/plugin.json
         ├── SKILL.md

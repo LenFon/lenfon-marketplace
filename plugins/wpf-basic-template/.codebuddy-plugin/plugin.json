@@ -1,7 +1,7 @@
 {
   "name": "wpf-basic-template",
-  "version": "1.4.1",
-  "description": "用户标准化 WPF 脚手架（Prism 9 + Material Design 5【默认 MD3 样式】+ CommunityToolkit.Mvvm + CPM + slnx + src 四层）。用于新建 WPF 项目 / 解决方案 / View / UserControl，直接套用 assets/ 下 25 个模板文件。",
+  "version": "1.5.0",
+  "description": "用户标准化 WPF 一键脚手架（Prism 9 + Material Design 5【默认 MD3 样式】+ CommunityToolkit.Mvvm + CPM + slnx + src 四层）。用于新建 WPF 项目 / 解决方案 / View / UserControl：scripts/scaffold.py 一条命令完成模板拷贝（26 个文件，含 .gitignore）→ 占位符替换 → git init + 首次提交，跨平台纯标准库。",
   "author": {
     "name": "lenfon",
     "url": "https://github.com/LenFon"

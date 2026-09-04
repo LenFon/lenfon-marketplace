@@ -1,8 +1,8 @@
 # wpf-basic-template
 
-WorkBuddy 技能：**WPF 标准解决方案脚手架**（含 25 个可拷贝模板文件）。
+WorkBuddy 技能：**WPF 标准解决方案脚手架 v1.5.0**（含 26 个可拷贝模板文件 + 一键脚手架脚本）。
 
-基于真实项目 WeatherApp 全链路验证，一键生成 Prism 9 + Material Design 5（默认 MD3 样式）+ CommunityToolkit.Mvvm 的 WPF 解决方案骨架。
+基于真实项目 WeatherApp 全链路验证，`scripts/scaffold.py` 一条命令生成 Prism 9 + Material Design 5（默认 MD3 样式）+ CommunityToolkit.Mvvm 的 WPF 解决方案骨架（含 .gitignore 与 git 初始提交）。
 
 ## 特性
 
@@ -16,7 +16,8 @@ WorkBuddy 技能：**WPF 标准解决方案脚手架**（含 25 个可拷贝模�
 | 日志 | Serilog + Serilog.Sinks.File，全局异常三钩子 |
 | 设计时 | 所有 View 根元素强制 `d:DataContext` 设计时绑定（含设计器专用无参构造分部类） |
 | 质量 | 两轮编译验证 0 错 0 警（XAML 侧 + 纯 C# 侧） |
-| 版本核对 | 附 `scripts/check-package-versions.py`：逐包核对 nuget.org 最新稳定版 + 成对包一致性校验，纯标准库，退出码 0/1/2 |
+| 一键脚手架 | `scripts/scaffold.py`：一条命令完成 模板拷贝（含 .gitignore）→ `__APP_NAME__` 占位符替换（内容+文件名）→ `git init` + 首次提交 → 打印 restore/build 命令。跨平台纯标准库（Python ≥ 3.10），自动探测 NuGet 环境异常并按本机环境变量生成 env 前缀（bash / PowerShell 双语法） |
+| 版本核对 | 附 `scripts/check-package-versions.py`：逐包核对 nuget.org 最新稳定版 + 成对包一致性校验，纯标准库，退出码 0/1/2，可与 restore 并行 |
 
 ## 安装方式
 
@@ -41,10 +42,18 @@ WorkBuddy 技能：**WPF 标准解决方案脚手架**（含 25 个可拷贝模�
 用 wpf-basic-template 技能新建一个 WPF 项目
 ```
 
-或手动使用：
+**推荐**（一键）：
 
-1. 将 `assets/` 下 25 个文件拷入新项目目录（`__APP_NAME__` 占位符全局替换为实际项目名）
-2. 生成 slnx：`dotnet new sln -n <名称> --format slnx`
+```bash
+python scripts/scaffold.py <目标目录> <AppName>
+```
+
+自动完成模板拷贝、占位符替换、git init + 首次提交，并打印后续 restore/build 命令。
+
+手动方式：
+
+1. 将 `assets/` 下 26 个文件拷入新项目目录（`__APP_NAME__` 占位符全局替换为实际项目名，含文件名）
+2. `git init` + 首次提交（可选）
 3. `dotnet restore && dotnet build --no-restore`
 
 ## 模板结构
@@ -55,6 +64,7 @@ assets/
 ├── Directory.Build.props             # LangVersion / Nullable / ImplicitUsings
 ├── Directory.Packages.props          # CPM，10 个包版本集中管理
 ├── nuget.config                      # NuGet 源：仅官方源 + <clear />（还原可复现）
+├── .gitignore                        # 标准 WPF 忽略规则（bin/obj、.vs、publish、TestResults）
 └── src/
     ├── __APP_NAME__/                 # WPF 应用（Prism 引导 + MD3 主题 + Serilog）
     │   ├── App.xaml(.cs)             # Prism + DI 容器
@@ -84,7 +94,7 @@ assets/
 
 - Prism 9 命名空间重组：Region 类型在 `Prism.Navigation.Regions`，`NavigationParameters` 在 `Prism.Navigation`
 - DI 注入字段须在 `XxxViewModel.Design.cs` 设计器无参构造首行写 `_xxx = null!;` 占位，否则编译必报 CS8618
-- 宿主 shell 缺 `APPDATA`/`PROGRAMFILES`、`HOME` 为 POSIX 路径时 restore 报 `Value cannot be null. (Parameter 'path1')`，用 `env` 前缀注入（`HOME` 必须写 Windows 反斜杠路径）
+- 宿主 shell 缺 `APPDATA`/`PROGRAMFILES`、`HOME` 为 POSIX 路径时 restore 报 `Value cannot be null. (Parameter 'path1')`，用 `env` 前缀注入（`HOME` 必须写 Windows 反斜杠路径）；沙箱下 `USERNAME`/`APPDATA` 可能与真实用户目录（`USERPROFILE`）不一致，前缀统一从 `USERPROFILE` 派生（scaffold.py 已内置）
 - Material Design 5 无 `ProgressRing` 控件，用标准 `ProgressBar` + `MaterialDesignCircularProgressBar` 样式
 - 密码绑定用 MD 官方附加属性 `PasswordBoxAssist.Password`（双向写回）
 - 编译验证直接用 .NET SDK 跑通（`dotnet restore && dotnet build`），要求 0 错 0 警

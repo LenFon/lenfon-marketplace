@@ -1,6 +1,6 @@
 # 模板文件清单与维护约定
 
-## assets/ 下 25 个模板文件
+## assets/ 下 26 个模板文件
 
 | 文件 | 说明 |
 |---|---|
@@ -8,6 +8,7 @@
 | `Directory.Build.props` | `LangVersion` / `Nullable` / `ImplicitUsings` |
 | `Directory.Packages.props` | CPM，10 个包版本集中管理 |
 | `nuget.config` | NuGet 源：仅官方 `nuget.org`（详见 `01-project-layout.md`） |
+| `.gitignore` | 标准 WPF 忽略规则（bin/obj、.vs、publish、TestResults、OS 杂项）；scaffold.py 拷贝后自动 `git init` + 首次提交 |
 | `src/__APP_NAME__/__APP_NAME__.csproj` | WPF 应用，10 个包 + 3 个项目引用 |
 | `src/__APP_NAME__/App.xaml` / `.cs` | Prism 引导 + MD 主题 + Serilog/全局异常挂钩 |
 | `src/__APP_NAME__/App.GlobalException.cs` | 全局异常三钩子 + Serilog 配置（App 分部类） |
@@ -27,7 +28,8 @@
 
 ## 维护约定（强制）
 
-- **版本核对按需进行，不设定期巡检**：每次新建项目时（SKILL.md 快速流程第 3 步）运行 `scripts/check-package-versions.py <项目根>/Directory.Packages.props` 核对 `01-project-layout.md`「包组合」全部包的最新【稳定版】，有新版则同步 `SKILL.md` 索引、`assets/Directory.Packages.props`、`assets/src/__APP_NAME__/__APP_NAME__.csproj`。**更新后无需推送 GitHub**，本地保留即可。
+- **版本核对按需进行，不设定期巡检**：每次新建项目时运行 `scripts/check-package-versions.py <项目根>/Directory.Packages.props` 核对 `01-project-layout.md`「包组合」全部包的最新【稳定版】，有新版则同步 `SKILL.md` 索引、`assets/Directory.Packages.props`、`assets/src/__APP_NAME__/__APP_NAME__.csproj`。**更新后无需推送 GitHub**，本地保留即可。
+  核对可与 `dotnet restore` 并行：props 已是最新时 restore 不受影响，仅在发现可升级时改 props 后重新 build。
   脚本为纯标准库（无第三方依赖），退出码 0=全部最新、1=存在可升级、2=出错，可直接接入 CI / 钩子；成对包（Prism 双包、MD 双包）版本不一致会额外输出 WARN。
 - **只取稳定版**：禁 preview/alpha/beta/rc；成对包（Prism 双包、MD 双包）版本严格一致。
 - 坑位与写法变更即时手动更新，不等待任何定时任务。

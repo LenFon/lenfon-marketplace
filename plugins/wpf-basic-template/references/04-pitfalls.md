@@ -18,5 +18,6 @@
 | **注入字段未加 `null!` → CS8618** | DI 注入字段（`private readonly IXxxService _field;`）一旦分部类另一半 `XxxViewModel.Design.cs` 提供了设计器无参构造却没给该字段赋值，编译必报 **CS8618**，直接破坏「0 错 0 警」验收标准。**标准解法（模板惯例）**：不要动运行时类的字段声明，而是在 `Design.cs` 的设计器无参构造第一行写 `_field = null!;`（与 `MainViewModel.Design.cs` 的 `_messageService = null!;` 一致；`readonly` 字段可在任意实例构造函数中赋值）。历史坑：旧版模板 `ShellViewModel.Design.cs` 漏了这一句，是唯一触发点，**模板 assets 已于 2026-09-04 修正**。 |
 | **`dotnet restore` 报 `Value cannot be null. (Parameter 'path1')`** | 宿主 shell 缺 `APPDATA` / `PROGRAMFILES`，且 `HOME` 为 POSIX 格式（`/c/Users/PC`）→ NuGet 内部 `Path.Combine(null, ...)` 抛异常，与项目本身无关（空目录也报）。解法：restore/build 前用 `env` 前缀注入（bash 里 `HOME` **必须写成 Windows 反斜杠路径**）：`env APPDATA='C:\Users\PC\AppData\Roaming' HOME='C:\Users\PC' PROGRAMFILES='C:\Program Files' dotnet restore`。PowerShell 同样缺这些变量。 |
 | **`x:Name` 与类型同名报 CS0120** | `x:Name="PasswordBox"` 生成的字段与类型 `PasswordBox` 同名 → code-behind 里 `PasswordBox.Xxx` 被解析为类型静态访问 → CS0120。元素命名避开类型名（如 `PwdBox`）。 |
+| **沙箱下 `USERNAME` / `APPDATA` 与真实用户目录不一致** | 实测沙箱 shell 中 `USERNAME=lenfon` 而 `USERPROFILE=C:\Users\PC`，`APPDATA` 也指向 `lenfon`。生成 env 前缀时**统一从 `USERPROFILE` 派生**（`APPDATA = USERPROFILE\AppData\Roaming`），勿信 `USERNAME`/`APPDATA`。`scaffold.py` 已内置此逻辑。 |
 
 > 跨 DLL 的 `clr-namespace` 必须带 `;assembly=` 的细则见 `03-prism-and-ui.md`。

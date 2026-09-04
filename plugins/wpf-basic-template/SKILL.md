@@ -1,6 +1,6 @@
 ---
 name: wpf-basic-template
-description: 用 lenfon 标准化脚手架新建 WPF 解决方案、项目、View、UserControl 或 ViewModel（Prism 9 + Material Design 5【默认 MD3】+ CommunityToolkit.Mvvm + CPM + slnx + src 四层），直接复用 assets/ 下 25 个模板文件。当用户要求新建 WPF 项目、搭解决方案骨架、新增 View / UserControl / ViewModel，或要求套用既有分层与编码约定（C# 13 分部属性、View 设计时绑定、共享转换器字典、CPM 集中版本、slnx 解决方案）时使用本技能。
+description: 用 lenfon 标准化脚手架新建 WPF 解决方案、项目、View、UserControl 或 ViewModel（Prism 9 + Material Design 5【默认 MD3】+ CommunityToolkit.Mvvm + CPM + slnx + src 四层），scripts/scaffold.py 一键生成（含 .gitignore + git init）。当用户要求新建 WPF 项目、搭解决方案骨架、新增 View / UserControl / ViewModel，或要求套用既有分层与编码约定（C# 13 分部属性、View 设计时绑定、共享转换器字典、CPM 集中版本、slnx 解决方案）时使用本技能。
 agent_created: true
 ---
 
@@ -10,13 +10,22 @@ lenfon 于 2026-09-01 确立的个人标准模板。新建 WPF 项目一律照�
 
 ## 快速流程
 
-1. 复制 `assets/` 下 25 个文件到新解决方案目录（清单见 `references/06-assets-manifest.md`）。
-2. 把占位符 `__APP_NAME__` 全局替换为实际项目名（文件名与文件内容都要替换）。
-3. 核对 `Directory.Packages.props` 的包版本为 nuget.org 最新**稳定版**（包表见 `references/01-project-layout.md`）：直接运行 `python scripts/check-package-versions.py <项目根>/Directory.Packages.props`（纯标准库，逐包查询 + 成对包版本一致性校验；退出码 0=全部最新 1=存在可升级 2=出错）。
-4. 直接用 .NET SDK 还原包并编译生成的项目：`dotnet restore && dotnet build --no-restore`，迭代修复到 **0 错 0 警**（验证细则见 `references/05-build-verification.md`）。**Git Bash / PowerShell 宿主下首次 restore 必报 `path1` null**，直接带 env 前缀执行（`HOME` 须为 Windows 反斜杠路径，详见 `references/04-pitfalls.md`）：`env APPDATA='C:\Users\<用户>\AppData\Roaming' HOME='C:\Users\<用户>' PROGRAMFILES='C:\Program Files' dotnet restore`。
-5. 新增 View / ViewModel 时套用 `references/03-prism-and-ui.md` 与 `references/02-code-style.md` 的写法。
+**方式一（推荐）：一键脚手架**
 
-替换占位符（Python；读 `utf-8-sig` 吞模板残留 BOM，写 `utf-8` 无 BOM）：
+```bash
+python scripts/scaffold.py <目标目录> <AppName>
+```
+
+一条命令完成：复制 `assets/` 全部模板文件（含 `.gitignore`）→ 占位符 `__APP_NAME__` 替换（内容 + 文件/目录名）→ `git init` + 首次提交（`--no-git` 跳过）→ 打印带 env 前缀的后续 restore/build 命令。
+
+**方式二：手动分步**
+
+1. 复制 `assets/` 下模板文件到新解决方案目录（清单见 `references/06-assets-manifest.md`），并把占位符 `__APP_NAME__` 全局替换为实际项目名（文件名与文件内容都要替换）。
+2. 核对 `Directory.Packages.props` 的包版本为 nuget.org 最新**稳定版**（包表见 `references/01-project-layout.md`）：直接运行 `python scripts/check-package-versions.py <项目根>/Directory.Packages.props`（纯标准库，逐包查询 + 成对包版本一致性校验；退出码 0=全部最新 1=存在可升级 2=出错）。**可与第 3 步的 restore 并行执行**——props 已是最新时 restore 不受核对影响，仅在发现可升级时改 props 后重新 build。
+3. 直接用 .NET SDK 还原包并编译生成的项目：`dotnet restore && dotnet build --no-restore`，迭代修复到 **0 错 0 警**（验证细则见 `references/05-build-verification.md`）。**Git Bash / PowerShell 宿主下首次 restore 必报 `path1` null**，直接带 env 前缀执行（`HOME` 须为 Windows 反斜杠路径，详见 `references/04-pitfalls.md`）：`env APPDATA='C:\Users\<用户>\AppData\Roaming' HOME='C:\Users\<用户>' PROGRAMFILES='C:\Program Files' dotnet restore`。
+4. 新增 View / ViewModel 时套用 `references/03-prism-and-ui.md` 与 `references/02-code-style.md` 的写法。
+
+手动替换占位符（Python；读 `utf-8-sig` 吞模板残留 BOM，写 `utf-8` 无 BOM）：
 
 ```python
 import pathlib
@@ -74,7 +83,8 @@ for p in pathlib.Path('.').rglob('*'):
 | `references/05-build-verification.md` | 直接用 .NET SDK `dotnet restore && dotnet build` 验证编译 0 错要求 |
 | `references/06-assets-manifest.md` | 模板文件清单 + 技能维护约定 |
 | `scripts/check-package-versions.py` | CPM 包版本核对脚本（逐包查 nuget.org 最新稳定版 + 成对包一致性校验，纯标准库） |
-| `assets/` | 25 个可直接拷贝的模板文件（slnx / 两个 props / nuget.config / src 四层） |
+| `scripts/scaffold.py` | 一键脚手架：复制 assets → 替换占位符（内容+文件名）→ git init + 首次提交 → 打印 env 前缀的 restore/build 命令（用法见快速流程方式一） |
+| `assets/` | 26 个可直接拷贝的模板文件（slnx / 两个 props / nuget.config / .gitignore / src 四层） |
 
 ## 依赖技能
 
