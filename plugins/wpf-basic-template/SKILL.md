@@ -13,7 +13,7 @@ lenfon 于 2026-09-01 确立的个人标准模板。新建 WPF 项目一律照�
 1. 复制 `assets/` 下 25 个文件到新解决方案目录（清单见 `references/06-assets-manifest.md`）。
 2. 把占位符 `__APP_NAME__` 全局替换为实际项目名（文件名与文件内容都要替换）。
 3. 核对 `Directory.Packages.props` 的包版本为 nuget.org 最新**稳定版**（包表见 `references/01-project-layout.md`）。
-4. 运行 `dotnet restore && dotnet build --no-restore`，迭代修复到 **0 错 0 警**（DLP 环境绕行方案见 `references/05-build-verification.md`）。
+4. 直接用 .NET SDK 还原包并编译生成的项目：`dotnet restore && dotnet build --no-restore`，迭代修复到 **0 错 0 警**（验证细则见 `references/05-build-verification.md`）。
 5. 新增 View / ViewModel 时套用 `references/03-prism-and-ui.md` 与 `references/02-code-style.md` 的写法。
 
 替换占位符（Python；读 `utf-8-sig` 吞模板残留 BOM，写 `utf-8` 无 BOM）：
@@ -61,7 +61,7 @@ for p in pathlib.Path('.').rglob('*'):
 | XAML 跨 DLL 命名空间 | 写成 `clr-namespace:X;assembly=Y`，同程序集不带 assembly | `03-prism-and-ui.md` |
 | 转换器 | 优先用 `ValueConverters` 包，统一注册到 `Resources/Converters.xaml`，禁 View 内联定义 | `03-prism-and-ui.md` |
 | 异常 | ViewModel 内不 try-catch，异常冒泡到全局三钩子收口 | `03-prism-and-ui.md` |
-| 编译 | 必须 0 错 0 警；本机 DLP 环境按绕行方案验证 | `05-build-verification.md` |
+| 编译 | 必须 0 错 0 警；直接用 .NET SDK `dotnet restore && dotnet build` 验证 | `05-build-verification.md` |
 
 ## 资源索引
 
@@ -71,7 +71,7 @@ for p in pathlib.Path('.').rglob('*'):
 | `references/02-code-style.md` | 分部属性 + 自检脚本、XML 注释、单行注释位置、var、线程锁 |
 | `references/03-prism-and-ui.md` | Prism 引导、Shell 导航、全局异常 + Serilog、MD3 主题、设计时绑定、值转换器 |
 | `references/04-pitfalls.md` | 已踩坑位与解法（Prism 9 命名空间、CA1416、DLP 加密、git push 挂起等） |
-| `references/05-build-verification.md` | 编译 0 错要求 + 本机 DLP 环境绕行验证方案 |
+| `references/05-build-verification.md` | 直接用 .NET SDK `dotnet restore && dotnet build` 验证编译 0 错要求 |
 | `references/06-assets-manifest.md` | 模板文件清单 + 技能维护约定 |
 | `assets/` | 25 个可直接拷贝的模板文件（slnx / 两个 props / nuget.config / src 四层） |
 

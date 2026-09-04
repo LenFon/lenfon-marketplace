@@ -76,7 +76,7 @@ assets/
 | `references/02-code-style.md` | 分部属性 + 自检脚本、XML 注释、单行注释位置、var、线程锁 |
 | `references/03-prism-and-ui.md` | Prism 引导、Shell 导航、全局异常 + Serilog、MD3 主题、设计时绑定、值转换器 |
 | `references/04-pitfalls.md` | 已踩坑位与解法 |
-| `references/05-build-verification.md` | 编译 0 错要求 + 本机 DLP 环境绕行验证方案 |
+| `references/05-build-verification.md` | 直接用 .NET SDK `dotnet restore && dotnet build` 验证编译 0 错要求 |
 | `references/06-assets-manifest.md` | 模板文件清单 + 技能维护约定 |
 
 ## 坑位清单（已沉淀进 references/04-pitfalls.md）
@@ -84,7 +84,7 @@ assets/
 - Prism 9 命名空间重组：Region 类型在 `Prism.Navigation.Regions`，`NavigationParameters` 在 `Prism.Navigation`
 - Material Design 5 无 `ProgressRing` 控件，用标准 `ProgressBar` + `MaterialDesignCircularProgressBar` 样式
 - 密码绑定用 MD 官方附加属性 `PasswordBoxAssist.Password`（双向写回）
-- 本机 DLP 加密环境下，编译验证需在临时目录跑（Stubs.cs 占位方案）
+- 编译验证直接用 .NET SDK 跑通（`dotnet restore && dotnet build`），要求 0 错 0 警
 
 ## 许可证
 

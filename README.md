@@ -19,7 +19,7 @@ lenfon 的个人 WorkBuddy 用户市场，收录 WPF/.NET 桌面开发方向的�
 
 ## 技能编写规范
 
-本市场所有技能遵循 CodeBuddy Skills 规范（https://www.codebuddy.cn/docs/ide/Features/Skills）：
+本市场所有技能遵循 CodeBuddy Skills 规范（https://www.codebuddy.cn/docs/ide/Features/Skills ）：
 
 | 规范项 | 落实方式 |
 |---|---|
@@ -65,7 +65,7 @@ lenfon 的个人 WorkBuddy 用户市场，收录 WPF/.NET 桌面开发方向的�
 
 ## 市场清单规范
 
-本市场遵循插件市场规范（https://www.codebuddy.ai/docs/zh/cli/plugin-marketplaces）：
+本市场遵循插件市场规范（https://www.codebuddy.ai/docs/zh/cli/plugin-marketplaces ）：
 
 | 规范项 | 落实方式 |
 |---|---|
