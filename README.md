@@ -31,30 +31,6 @@ lenfon 的个人 WorkBuddy 用户市场，收录 WPF/.NET 桌面开发方向的�
 
 ## 添加市场与安装插件
 
-遵循插件市场规范：先 `add` 市场，再 `install` 具体插件。
-
-### 命令行
-
-```bash
-/plugin marketplace add LenFon/lenfon-marketplace      # 添加市场（owner/repo 简写）
-/plugin install wpf-basic-template@lenfon-marketplace  # 安装插件（默认用户作用域）
-/plugin marketplace update lenfon-marketplace          # 刷新插件列表
-/reload-plugins                                        # 不重启即生效
-```
-
-等价写法与其它来源形式：
-
-```bash
-/plugin marketplace add https://github.com/LenFon/lenfon-marketplace   # Git URL
-/plugin marketplace add ./lenfon-marketplace                           # 本地目录（本仓库 clone 后）
-/plugin marketplace list                                               # 查看已配置市场
-/plugin marketplace remove lenfon-marketplace                          # 移除市场（会卸载其下插件）
-```
-
-安装作用域：默认**用户作用域**（全项目可用）；`--scope project` 写入 `.codebuddy/settings.json` 供协作者共用。
-
-### 对话方式
-
 在 WorkBuddy 对话中直接发送下面这句即可（AI 会代为添加并启用插件）：
 
 > 请添加插件市场 https://github.com/LenFon/lenfon-marketplace ，并安装、启用其中的 material-design-styles、wpf-basic-template 与 prism-assistant。
