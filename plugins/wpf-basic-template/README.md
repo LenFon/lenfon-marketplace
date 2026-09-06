@@ -1,6 +1,6 @@
 # wpf-basic-template
 
-WorkBuddy 技能：**WPF 标准解决方案脚手架 v1.5.0**（含 26 个可拷贝模板文件 + 一键脚手架脚本）。
+WorkBuddy 技能：**WPF 标准解决方案脚手架 v1.5.1**（含 28 个可拷贝模板文件 + 一键脚手架脚本）。
 
 基于真实项目 WeatherApp 全链路验证，`scripts/scaffold.py` 一条命令生成 Prism 9 + Material Design 5（默认 MD3 样式）+ CommunityToolkit.Mvvm 的 WPF 解决方案骨架（含 .gitignore 与 git 初始提交）。
 
@@ -52,7 +52,7 @@ python scripts/scaffold.py <目标目录> <AppName>
 
 手动方式：
 
-1. 将 `assets/` 下 26 个文件拷入新项目目录（`__APP_NAME__` 占位符全局替换为实际项目名，含文件名）
+1. 将 `assets/` 下 28 个文件拷入新项目目录（`__APP_NAME__` 占位符全局替换为实际项目名，含文件名）
 2. `git init` + 首次提交（可选）
 3. `dotnet restore && dotnet build --no-restore`
 
