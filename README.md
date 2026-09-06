@@ -39,6 +39,110 @@ lenfon 的个人 WorkBuddy 用户市场，收录 WPF/.NET 桌面开发方向的�
 
 **更新插件**：对话中再次发送市场安装指令即可拉取最新版；或进入市场目录执行 `git pull`。插件安装后落在 `~/.workbuddy/plugins/cache/lenfon-marketplace/<插件>/<版本>/`，运行时只从该版本化快照加载。
 
+### 手动安装（AI 代装失败时的兜底方案）
+
+部分机器上，直接让 WorkBuddy 的 AI 代为添加市场 / 插件可能不生效（例如客户端版本差异、或 AI 未正确执行安装流程）。此时可用下面的**本地手动方式**，效果等价且可复现，适合给其他机器批量部署。
+
+**前置条件**：已安装 Git，且 WorkBuddy 至少完整启动过一次（会自动创建 `~/.workbuddy/plugins/` 等目录）。
+
+**步骤 1 — 克隆市场**
+
+```powershell
+git clone --depth 1 https://github.com/LenFon/lenfon-marketplace.git "$env:USERPROFILE\.workbuddy\plugins\marketplaces\lenfon-marketplace"
+```
+
+克隆完成后，WorkBuddy 一般会自动把该目录识别并注册为本地市场（`known_marketplaces.json` 中出现 `lenfon-marketplace`，`type: directory`）。若没有自动出现，按文末「注册条目参考」手动补齐即可。
+
+**步骤 2–4 — 安装并启用插件（一键脚本）**
+
+把下面脚本保存为仓库根目录的 `install.py` 并运行（自动把全部插件装进 `cache/`、登记 `installed_plugins.json`、启用 `settings.json`）：
+
+```python
+import json, os, shutil
+from datetime import datetime, timezone
+
+HOME = os.path.expanduser("~")
+MARKET = "lenfon-marketplace"
+MROOT = os.path.join(HOME, ".workbuddy", "plugins", "marketplaces", MARKET)
+PDIR = os.path.join(HOME, ".workbuddy", "plugins")
+CACHE = os.path.join(PDIR, "cache", MARKET)
+_ms = datetime.now().microsecond // 1000
+NOW = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.") + f"{_ms:03d}Z"
+
+mkt = json.load(open(os.path.join(MROOT, ".codebuddy-plugin", "marketplace.json"), encoding="utf-8"))
+plugins = mkt["plugins"]
+
+# 1) known_marketplaces.json（仅当缺失时补齐）
+km_path = os.path.join(PDIR, "known_marketplaces.json")
+km = json.load(open(km_path, encoding="utf-8"))
+if MARKET not in km:
+    km[MARKET] = {
+        "manifestName": MARKET,
+        "type": "directory",
+        "source": {"source": "directory", "path": MROOT},
+        "installLocation": MROOT,
+        "description": f"Marketplace from https://github.com/LenFon/{MARKET}",
+        "lastUpdated": NOW,
+        "autoUpdate": False,
+        "isBuiltIn": False,
+    }
+    json.dump(km, open(km_path, "w", encoding="utf-8"), indent=2, ensure_ascii=False)
+    print("已注册市场:", MARKET)
+
+# 2) 安装到 cache + 登记 installed_plugins.json
+ip_path = os.path.join(PDIR, "installed_plugins.json")
+ip = json.load(open(ip_path, encoding="utf-8"))
+ip.setdefault("plugins", {})
+# 3) settings.json
+s_path = os.path.join(HOME, ".workbuddy", "settings.json")
+s = json.load(open(s_path, encoding="utf-8"))
+s.setdefault("enabledPlugins", {})
+
+for p in plugins:
+    name = p["name"]
+    ver = p.get("version", "1.0.0")
+    src = os.path.join(MROOT, p.get("source", f"./plugins/{name}").lstrip("./"))
+    dst = os.path.join(CACHE, name, ver)
+    if os.path.exists(dst):
+        shutil.rmtree(dst)
+    shutil.copytree(src, dst)
+    key = f"{name}@{MARKET}"
+    ip["plugins"][key] = [{
+        "scope": "user",
+        "installPath": dst,
+        "version": ver,
+        "installedAt": NOW,
+        "lastUpdated": NOW,
+    }]
+    s["enabledPlugins"][key] = True
+    print("已安装并启用:", key, "->", dst)
+
+json.dump(ip, open(ip_path, "w", encoding="utf-8"), indent=2, ensure_ascii=False)
+json.dump(s, open(s_path, "w", encoding="utf-8"), indent=2, ensure_ascii=False)
+print("\n完成。请重启 WorkBuddy 使配置生效。")
+```
+
+**步骤 5 — 重启 WorkBuddy**
+
+完全退出后重新打开，插件列表即可看到 `lenfon-marketplace` 及其技能。
+
+**注册条目参考**（仅当步骤 1 未自动注册时，手动写入 `~/.workbuddy/plugins/known_marketplaces.json`）：
+
+```json
+"lenfon-marketplace": {
+  "manifestName": "lenfon-marketplace",
+  "type": "directory",
+  "source": { "source": "directory", "path": "C:\\Users\\<用户名>\\.workbuddy\\plugins\\marketplaces\\lenfon-marketplace" },
+  "installLocation": "C:\\Users\\<用户名>\\.workbuddy\\plugins\\marketplaces\\lenfon-marketplace",
+  "description": "Marketplace from https://github.com/LenFon/lenfon-marketplace",
+  "lastUpdated": "2026-01-01T00:00:00.000Z",
+  "autoUpdate": false,
+  "isBuiltIn": false
+}
+```
+
+**原理提示**：WorkBuddy 桌面端的插件实际从 `~/.workbuddy/plugins/cache/<市场>/<插件>/<版本>/` 加载，而非直接读市场目录；因此「安装」= 把插件源目录复制进 `cache/` + 在 `installed_plugins.json` 登记 + 在 `settings.json` 的 `enabledPlugins` 写 `"<插件>@<市场>": true`。仅注册市场而不装进 `cache` / 启用，插件不会出现在可用列表里。
+
 ## 市场清单规范
 
 本市场遵循插件市场规范（https://www.codebuddy.ai/docs/zh/cli/plugin-marketplaces ）：
