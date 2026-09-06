@@ -4,11 +4,11 @@
 
 | 文件 | 说明 |
 |---|---|
-| `__APP_NAME__.slnx` | 解决方案（4 项目在 `/src/`；两 props + nuget.config 挂在 `/解决方案项/` 下） |
+| `__APP_NAME__.slnx` | 解决方案（4 项目在 `/src/`；两 props + nuget.config + `.gitignore` 挂在 `/解决方案项/` 下） |
 | `Directory.Build.props` | `LangVersion` / `Nullable` / `ImplicitUsings` |
 | `Directory.Packages.props` | CPM，10 个包版本集中管理 |
 | `nuget.config` | NuGet 源：仅官方 `nuget.org`（详见 `01-project-layout.md`） |
-| `.gitignore` | 标准 WPF 忽略规则（bin/obj、.vs、publish、TestResults、OS 杂项）；scaffold.py 拷贝后自动 `git init` + 首次提交 |
+| `.gitignore` | 标准 WPF 忽略规则（bin/obj、.vs、publish、TestResults、OS 杂项）；含 `.workbuddy/` 排除项（scaffold.py 拷贝后自动 `git init` + 首次提交） |
 | `src/__APP_NAME__/__APP_NAME__.csproj` | WPF 应用，10 个包 + 3 个项目引用 |
 | `src/__APP_NAME__/App.xaml` / `.cs` | Prism 引导 + MD 主题 + Serilog/全局异常挂钩 |
 | `src/__APP_NAME__/App.GlobalException.cs` | 全局异常三钩子 + Serilog 配置（App 分部类） |

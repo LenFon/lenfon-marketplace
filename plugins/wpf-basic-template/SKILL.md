@@ -34,7 +34,7 @@ for p in pathlib.Path('.').rglob('*'):
         p.write_text(p.read_text(encoding='utf-8-sig').replace('__APP_NAME__', 'MyApp'), encoding='utf-8')
 ```
 
-解决方案文件：优先沿用模板里的 `__APP_NAME__.slnx`（已含「解决方案项」文件夹，挂两个 props + nuget.config）。手动生成时依次执行 `dotnet new sln -n <AppName> --format slnx`、`dotnet sln add <四个 csproj> --solution-folder src`，再在 `<Solution>` 根下补 `<Folder Name="/解决方案项/">` 节点。
+解决方案文件：优先沿用模板里的 `__APP_NAME__.slnx`（已含「解决方案项」文件夹，挂两个 props + nuget.config + `.gitignore`）。手动生成时依次执行 `dotnet new sln -n <AppName> --format slnx`、`dotnet sln add <四个 csproj> --solution-folder src`，再在 `<Solution>` 根下补 `<Folder Name="/解决方案项/">` 节点并挂入三个文件（两 props + nuget.config + `.gitignore`）。
 
 ## 目录骨架（强制）
 

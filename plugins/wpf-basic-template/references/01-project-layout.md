@@ -8,6 +8,7 @@
 ├─ Directory.Packages.props              <- CPM，与 slnx 同层
 ├─ Directory.Build.props                 <- 公共属性，与 slnx 同层
 ├─ nuget.config                          <- NuGet 源配置（仅官方源）
+├─ .gitignore                            <- 忽略规则（含 .workbuddy/），挂在「解决方案项」下
 └─ src/                                  <- 所有项目一律在 src/ 下
    ├─ <AppName>/                         netX.0-windows，WPF 应用（Prism 组合根）
    │  ├─ Views/  ViewModels/
