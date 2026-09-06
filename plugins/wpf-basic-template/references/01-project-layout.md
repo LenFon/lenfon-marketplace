@@ -9,6 +9,8 @@
 ├─ Directory.Build.props                 <- 公共属性，与 slnx 同层
 ├─ nuget.config                          <- NuGet 源配置（仅官方源）
 ├─ .gitignore                            <- 忽略规则（含 .workbuddy/），挂在「解决方案项」下
+├─ README.md                             <- 项目说明文档（模板生成，无敏感信息），挂在「解决方案项」下
+├─ LICENSE                               <- MIT 协议文本，挂在「解决方案项」下
 └─ src/                                  <- 所有项目一律在 src/ 下
    ├─ <AppName>/                         netX.0-windows，WPF 应用（Prism 组合根）
    │  ├─ Views/  ViewModels/

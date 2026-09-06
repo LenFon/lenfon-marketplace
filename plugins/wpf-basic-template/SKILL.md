@@ -34,7 +34,7 @@ for p in pathlib.Path('.').rglob('*'):
         p.write_text(p.read_text(encoding='utf-8-sig').replace('__APP_NAME__', 'MyApp'), encoding='utf-8')
 ```
 
-解决方案文件：优先沿用模板里的 `__APP_NAME__.slnx`（已含「解决方案项」文件夹，挂两个 props + nuget.config + `.gitignore`）。手动生成时依次执行 `dotnet new sln -n <AppName> --format slnx`、`dotnet sln add <四个 csproj> --solution-folder src`，再在 `<Solution>` 根下补 `<Folder Name="/解决方案项/">` 节点并挂入三个文件（两 props + nuget.config + `.gitignore`）。
+解决方案文件：优先沿用模板里的 `__APP_NAME__.slnx`（已含「解决方案项」文件夹，挂两个 props + nuget.config + `.gitignore` + `README.md` + `LICENSE`）。手动生成时依次执行 `dotnet new sln -n <AppName> --format slnx`、`dotnet sln add <四个 csproj> --solution-folder src`，再在 `<Solution>` 根下补 `<Folder Name="/解决方案项/">` 节点并挂入五个文件（两 props + nuget.config + `.gitignore` + `README.md` + `LICENSE`）。
 
 ## 目录骨架（强制）
 
@@ -44,6 +44,9 @@ for p in pathlib.Path('.').rglob('*'):
 ├─ Directory.Packages.props   <- CPM，与 slnx 同层
 ├─ Directory.Build.props      <- 公共属性，与 slnx 同层
 ├─ nuget.config               <- NuGet 源配置（仅官方源）
+├─ .gitignore                 <- 忽略规则（含 .workbuddy/）
+├─ README.md                  <- 项目说明文档（模板生成，无敏感信息）
+├─ LICENSE                    <- MIT 协议文本
 └─ src/                       <- 所有项目一律在 src/ 下
    ├─ <AppName>/                  netX.0-windows，WPF 应用（Prism 组合根）
    │  ├─ Views/  ViewModels/
@@ -84,7 +87,7 @@ for p in pathlib.Path('.').rglob('*'):
 | `references/06-assets-manifest.md` | 模板文件清单 + 技能维护约定 |
 | `scripts/check-package-versions.py` | CPM 包版本核对脚本（逐包查 nuget.org 最新稳定版 + 成对包一致性校验，纯标准库） |
 | `scripts/scaffold.py` | 一键脚手架：复制 assets → 替换占位符（内容+文件名）→ git init + 首次提交 → 打印 env 前缀的 restore/build 命令（用法见快速流程方式一） |
-| `assets/` | 26 个可直接拷贝的模板文件（slnx / 两个 props / nuget.config / .gitignore / src 四层） |
+| `assets/` | 28 个可直接拷贝的模板文件（slnx / 两个 props / nuget.config / .gitignore / README.md / LICENSE / src 四层） |
 
 ## 依赖技能
 
