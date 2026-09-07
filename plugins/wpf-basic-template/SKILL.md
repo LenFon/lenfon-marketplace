@@ -16,11 +16,13 @@ lenfon 于 2026-09-01 确立的个人标准模板。新建 WPF 项目一律照�
 python scripts/scaffold.py <目标目录> <AppName>
 ```
 
-一条命令完成：复制 `assets/` 全部模板文件（含 `.gitignore`）→ 占位符 `__APP_NAME__` 替换（内容 + 文件/目录名）→ `git init` + 首次提交（`--no-git` 跳过）→ 打印带 env 前缀的后续 restore/build 命令。
+一条命令完成：复制 `assets/` 全部模板文件（含 `.gitignore`）→ 占位符 `__APP_NAME__`（项目名）与 `__OWNER__`（版权所有者）替换（内容 + 文件/目录名）→ `git init` + 首次提交（`--no-git` 跳过）→ 打印带 env 前缀的后续 restore/build 命令。**版权所有者（LICENSE）应为公司/组织名，非项目名：省略 `--owner` 时默认带出 git 用户名并交互要求创建者确认/覆盖。**
+
+> **新建项目前必做（智能体执行时）**：先确认版权所有者（公司/组织名）。取 `git config user.name` 作为默认值，向创建者确认或让其覆盖，再把最终值作为 `--owner` 传入脚手架；非交互环境下脚本会自动回退到该默认值，不会卡住。
 
 **方式二：手动分步**
 
-1. 复制 `assets/` 下模板文件到新解决方案目录（清单见 `references/06-assets-manifest.md`），并把占位符 `__APP_NAME__` 全局替换为实际项目名（文件名与文件内容都要替换）。
+1. 复制 `assets/` 下模板文件到新解决方案目录（清单见 `references/06-assets-manifest.md`），并把占位符 `__APP_NAME__` 全局替换为实际项目名（文件名与文件内容都要替换），同时把 `__OWNER__` 替换为**公司/组织名**（非项目名；创建时由创建者确认，默认带出 git 用户名）。
 2. 核对 `Directory.Packages.props` 的包版本为 nuget.org 最新**稳定版**（包表见 `references/01-project-layout.md`）：直接运行 `python scripts/check-package-versions.py <项目根>/Directory.Packages.props`（纯标准库，逐包查询 + 成对包版本一致性校验；退出码 0=全部最新 1=存在可升级 2=出错）。**可与第 3 步的 restore 并行执行**——props 已是最新时 restore 不受核对影响，仅在发现可升级时改 props 后重新 build。
 3. 直接用 .NET SDK 还原包并编译生成的项目：`dotnet restore && dotnet build --no-restore`，迭代修复到 **0 错 0 警**（验证细则见 `references/05-build-verification.md`）。**Git Bash / PowerShell 宿主下首次 restore 必报 `path1` null**，直接带 env 前缀执行（`HOME` 须为 Windows 反斜杠路径，详见 `references/04-pitfalls.md`）：`env APPDATA='C:\Users\<用户>\AppData\Roaming' HOME='C:\Users\<用户>' PROGRAMFILES='C:\Program Files' dotnet restore`。
 4. 新增 View / ViewModel 时套用 `references/03-prism-and-ui.md` 与 `references/02-code-style.md` 的写法。
@@ -31,7 +33,10 @@ python scripts/scaffold.py <目标目录> <AppName>
 import pathlib
 for p in pathlib.Path('.').rglob('*'):
     if p.is_file():
-        p.write_text(p.read_text(encoding='utf-8-sig').replace('__APP_NAME__', 'MyApp'), encoding='utf-8')
+        p.write_text(p.read_text(encoding='utf-8-sig')
+                     .replace('__APP_NAME__', 'MyApp')
+                     .replace('__OWNER__', 'CompanyName'),  # 公司/组织名，非项目名
+                     encoding='utf-8')
 ```
 
 解决方案文件：优先沿用模板里的 `__APP_NAME__.slnx`（已含「解决方案项」文件夹，挂两个 props + nuget.config + `.gitignore` + `README.md` + `LICENSE`）。手动生成时依次执行 `dotnet new sln -n <AppName> --format slnx`、`dotnet sln add <四个 csproj> --solution-folder src`，再在 `<Solution>` 根下补 `<Folder Name="/解决方案项/">` 节点并挂入五个文件（两 props + nuget.config + `.gitignore` + `README.md` + `LICENSE`）。

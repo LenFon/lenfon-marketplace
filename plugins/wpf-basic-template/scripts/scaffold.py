@@ -3,13 +3,18 @@
 """WPF 标准模板一键脚手架（跨平台：Windows / macOS / Linux 任意机器可跑）。
 
 用法:
-    python scaffold.py <目标目录> <AppName> [--no-git] [--skill-dir <路径>]
+    python scaffold.py <目标目录> <AppName> [--owner <公司/组织名>] [--no-git] [--skill-dir <路径>]
 
 功能:
     1. 复制技能 assets/ 下全部模板文件到 <目标目录>（含 .gitignore）
-    2. 占位符 __APP_NAME__ 全局替换（文件内容 + 文件/目录名）
+    2. 占位符 __APP_NAME__（项目名）与 __OWNER__（版权所有者）全局替换（文件内容 + 文件/目录名）
     3. git init + 首次提交（--no-git 或未装 git 时跳过）
     4. 打印后续 restore/build 命令；仅在检测到 NuGet 环境异常时附加 env 前缀
+
+版权所有者约定:
+    - LICENSE 的版权所有者用 __OWNER__ 占位，应为公司 / 组织名，**不是**项目名
+    - 未传 --owner 时，默认带出 git 用户名（git config user.name）；无 git 则回退 OS 登录名
+    - 有交互终端时，创建者会看到默认值并被要求确认 / 覆盖；非交互（如 CI / 智能体）直接用默认值
 
 约定:
     - 纯标准库，无第三方依赖；Python >= 3.10
@@ -25,6 +30,7 @@ import subprocess
 import sys
 
 PLACEHOLDER = "__APP_NAME__"
+OWNER_PLACEHOLDER = "__OWNER__"
 
 
 def fail(msg: str, code: int = 1) -> int:
@@ -32,15 +38,42 @@ def fail(msg: str, code: int = 1) -> int:
     return code
 
 
-def replace_and_rename(root: pathlib.Path, app_name: str) -> int:
+def get_git_user() -> str:
+    """取 git 配置 user.name 作为版权所有者默认值（无 git / 未配置则返回 None）。"""
+    if shutil.which("git") is None:
+        return None
+    try:
+        r = subprocess.run(
+            ["git", "config", "user.name"],
+            capture_output=True, text=True, timeout=10,
+        )
+        return r.stdout.strip() or None
+    except Exception:
+        return None
+
+
+def confirm_owner(default: str) -> str:
+    """无 --owner 时交互确认版权所有者（公司 / 组织名），默认带出 git 用户名。
+
+    非交互（无 tty / 管道）或读取失败时直接回退默认值，不阻塞。
+    """
+    try:
+        if not sys.stdin.isatty():
+            return default
+        val = input(f"版权所有者（公司/组织名，默认 git 用户名「{default}」）: ").strip()
+        return val or default
+    except (EOFError, OSError):
+        return default
+
+
+def replace_and_rename(root: pathlib.Path, app_name: str, owner: str) -> int:
     """替换文件内容中的占位符，再重命名含占位符的文件/目录（自底向上）。"""
     count = 0
     for p in root.rglob("*"):
         if p.is_file():
-            p.write_text(
-                p.read_text(encoding="utf-8-sig").replace(PLACEHOLDER, app_name),
-                encoding="utf-8",
-            )
+            text = p.read_text(encoding="utf-8-sig")
+            text = text.replace(PLACEHOLDER, app_name).replace(OWNER_PLACEHOLDER, owner)
+            p.write_text(text, encoding="utf-8")
             count += 1
     for p in sorted(root.rglob(f"*{PLACEHOLDER}*"), key=lambda x: len(x.parts), reverse=True):
         new = p.with_name(p.name.replace(PLACEHOLDER, app_name))
@@ -116,6 +149,8 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="WPF 标准模板一键脚手架（跨平台）")
     parser.add_argument("target", help="新解决方案根目录（不存在则创建）")
     parser.add_argument("app_name", help="项目名（同时用于解决方案与根命名空间）")
+    parser.add_argument("--owner", default=None,
+                        help="版权所有者（公司/组织名，写入 LICENSE）；省略则默认 git 用户名并交互确认")
     parser.add_argument("--no-git", action="store_true", help="跳过 git init + 首次提交")
     parser.add_argument(
         "--skill-dir",
@@ -137,14 +172,23 @@ def main() -> int:
     if target.exists() and any(target.iterdir()):
         return fail(f"目标目录非空: {target}")
 
+    # 版权所有者：--owner 优先，否则默认 git 用户名（无 git 则 OS 登录名）并交互确认
+    try:
+        os_login = os.getlogin()
+    except OSError:
+        os_login = ""
+    owner_default = get_git_user() or os_login or "Unknown"
+    owner = args.owner.strip() if args.owner else confirm_owner(owner_default)
+
     try:
         target.mkdir(parents=True, exist_ok=True)
         shutil.copytree(assets, target, dirs_exist_ok=True)  # 纯 Python 复制，含隐藏文件
-        n = replace_and_rename(target, name)
+        n = replace_and_rename(target, name, owner)
     except OSError as e:
         return fail(f"复制/替换失败: {e}")
 
     print(f"[scaffold] 模板文件已就位: {target}（{n} 个文件已替换占位符 -> {name}）")
+    print(f"[scaffold] 版权所有者（LICENSE）: {owner}")
 
     if not args.no_git and not git_setup(target):
         print("[scaffold] git 环节失败（退出码 2），后续命令仍可执行", file=sys.stderr)
