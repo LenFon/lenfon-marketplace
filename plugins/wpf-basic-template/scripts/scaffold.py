@@ -3,18 +3,24 @@
 """WPF 标准模板一键脚手架（跨平台：Windows / macOS / Linux 任意机器可跑）。
 
 用法:
-    python scaffold.py <目标目录> <AppName> [--owner <公司/组织名>] [--no-git] [--skill-dir <路径>]
+    python scaffold.py <目标目录> <AppName> [--owner <公司/组织名>] [--license <协议>] [--no-git] [--skill-dir <路径>]
 
 功能:
     1. 复制技能 assets/ 下全部模板文件到 <目标目录>（含 .gitignore）
-    2. 占位符 __APP_NAME__（项目名）与 __OWNER__（版权所有者）全局替换（文件内容 + 文件/目录名）
-    3. git init + 首次提交（--no-git 或未装 git 时跳过）
-    4. 打印后续 restore/build 命令；仅在检测到 NuGet 环境异常时附加 env 前缀
+    2. 占位符 __APP_NAME__（项目名）、__OWNER__（版权所有者）、__YEAR__（年份）全局替换（文件内容 + 文件/目录名）
+    3. 按 --license 选择协议生成根目录 LICENSE（默认 mit；可选 mit / apache-2.0 / bsd-3-clause / mpl-2.0 / gpl-3.0）
+    4. git init + 首次提交（--no-git 或未装 git 时跳过）
+    5. 打印后续 restore/build 命令；仅在检测到 NuGet 环境异常时附加 env 前缀
 
 版权所有者约定:
     - LICENSE 的版权所有者用 __OWNER__ 占位，应为公司 / 组织名，**不是**项目名
     - 未传 --owner 时，默认带出 git 用户名（git config user.name）；无 git 则回退 OS 登录名
     - 有交互终端时，创建者会看到默认值并被要求确认 / 覆盖；非交互（如 CI / 智能体）直接用默认值
+
+协议约定:
+    - 协议模板在 scripts/licenses/ 下，文件名即协议标识（如 MIT.txt）；创建时由脚手架按 --license 写入根 LICENSE
+    - 默认 mit（最常用）；其余可选 apache-2.0 / bsd-3-clause / mpl-2.0 / gpl-3.0（含常见别名，如 apache / gpl）
+    - 年份用 __YEAR__ 占位，默认当前年
 
 约定:
     - 纯标准库，无第三方依赖；Python >= 3.10
@@ -23,6 +29,7 @@
     - 退出码: 0=成功 1=参数/IO 错误 2=git 环节失败（文件已就位，可手动补救）
 """
 import argparse
+import datetime
 import os
 import pathlib
 import shutil
@@ -31,11 +38,54 @@ import sys
 
 PLACEHOLDER = "__APP_NAME__"
 OWNER_PLACEHOLDER = "__OWNER__"
+YEAR_PLACEHOLDER = "__YEAR__"
+
+# 协议模板目录（相对技能根 scripts/ 下），不随 assets 拷贝进新项目
+LICENSE_DIR = "licenses"
+DEFAULT_LICENSE = "mit"
+# 协议标识（含常见别名，小写）→ 模板文件名
+LICENSE_ALIASES = {
+    "mit": "MIT.txt",
+    "apache": "Apache-2.0.txt",
+    "apache-2.0": "Apache-2.0.txt",
+    "apache2.0": "Apache-2.0.txt",
+    "bsd": "BSD-3-Clause.txt",
+    "bsd-3": "BSD-3-Clause.txt",
+    "bsd-3-clause": "BSD-3-Clause.txt",
+    "mpl": "MPL-2.0.txt",
+    "mpl-2.0": "MPL-2.0.txt",
+    "mpl2.0": "MPL-2.0.txt",
+    "gpl": "GPL-3.0.txt",
+    "gpl-3": "GPL-3.0.txt",
+    "gpl-3.0": "GPL-3.0.txt",
+    "gpl3": "GPL-3.0.txt",
+    "gpl3.0": "GPL-3.0.txt",
+}
 
 
 def fail(msg: str, code: int = 1) -> int:
     print(f"[scaffold] 错误: {msg}", file=sys.stderr)
     return code
+
+
+def resolve_license(skill_dir: str, license_arg: str | None):
+    """解析协议模板文件，返回 (模板文件名, Path)；未知协议返回 (None, None)。"""
+    lic_dir = pathlib.Path(skill_dir) / "scripts" / LICENSE_DIR
+    key = (license_arg or DEFAULT_LICENSE).strip().lower()
+    fname = LICENSE_ALIASES.get(key)
+    if not fname:
+        return None, None
+    p = lic_dir / fname
+    if not p.is_file():
+        return None, None
+    return fname, p
+
+
+def write_license(target: pathlib.Path, lic_path: pathlib.Path, owner: str, year: str) -> None:
+    """按所选协议生成根目录 LICENSE，替换版权所有者与年份占位符。"""
+    text = lic_path.read_text(encoding="utf-8-sig")
+    text = text.replace(OWNER_PLACEHOLDER, owner).replace(YEAR_PLACEHOLDER, year)
+    (target / "LICENSE").write_text(text, encoding="utf-8")
 
 
 def get_git_user() -> str:
@@ -66,13 +116,17 @@ def confirm_owner(default: str) -> str:
         return default
 
 
-def replace_and_rename(root: pathlib.Path, app_name: str, owner: str) -> int:
+def replace_and_rename(root: pathlib.Path, app_name: str, owner: str, year: str) -> int:
     """替换文件内容中的占位符，再重命名含占位符的文件/目录（自底向上）。"""
     count = 0
     for p in root.rglob("*"):
         if p.is_file():
             text = p.read_text(encoding="utf-8-sig")
-            text = text.replace(PLACEHOLDER, app_name).replace(OWNER_PLACEHOLDER, owner)
+            text = (
+                text.replace(PLACEHOLDER, app_name)
+                .replace(OWNER_PLACEHOLDER, owner)
+                .replace(YEAR_PLACEHOLDER, year)
+            )
             p.write_text(text, encoding="utf-8")
             count += 1
     for p in sorted(root.rglob(f"*{PLACEHOLDER}*"), key=lambda x: len(x.parts), reverse=True):
@@ -151,6 +205,8 @@ def main() -> int:
     parser.add_argument("app_name", help="项目名（同时用于解决方案与根命名空间）")
     parser.add_argument("--owner", default=None,
                         help="版权所有者（公司/组织名，写入 LICENSE）；省略则默认 git 用户名并交互确认")
+    parser.add_argument("--license", default=DEFAULT_LICENSE,
+                        help="开源协议（默认 mit）；可选 mit / apache-2.0 / bsd-3-clause / mpl-2.0 / gpl-3.0（含别名）")
     parser.add_argument("--no-git", action="store_true", help="跳过 git init + 首次提交")
     parser.add_argument(
         "--skill-dir",
@@ -168,6 +224,12 @@ def main() -> int:
     if not assets.is_dir():
         return fail(f"模板 assets 目录不存在: {assets}")
 
+    # 协议解析（早失败：未知协议不浪费拷贝）
+    lic_name, lic_path = resolve_license(args.skill_dir, args.license)
+    if lic_path is None:
+        avail = ", ".join(sorted(set(LICENSE_ALIASES)))
+        return fail(f"未知协议: {args.license!r}（可选: {avail}）")
+
     target = pathlib.Path(args.target).resolve()
     if target.exists() and any(target.iterdir()):
         return fail(f"目标目录非空: {target}")
@@ -179,16 +241,19 @@ def main() -> int:
         os_login = ""
     owner_default = get_git_user() or os_login or "Unknown"
     owner = args.owner.strip() if args.owner else confirm_owner(owner_default)
+    year = str(datetime.date.today().year)
 
     try:
         target.mkdir(parents=True, exist_ok=True)
         shutil.copytree(assets, target, dirs_exist_ok=True)  # 纯 Python 复制，含隐藏文件
-        n = replace_and_rename(target, name, owner)
+        n = replace_and_rename(target, name, owner, year)
+        write_license(target, lic_path, owner, year)  # 生成根 LICENSE（所选协议）
     except OSError as e:
         return fail(f"复制/替换失败: {e}")
 
     print(f"[scaffold] 模板文件已就位: {target}（{n} 个文件已替换占位符 -> {name}）")
     print(f"[scaffold] 版权所有者（LICENSE）: {owner}")
+    print(f"[scaffold] 开源协议（LICENSE）: {lic_name}")
 
     if not args.no_git and not git_setup(target):
         print("[scaffold] git 环节失败（退出码 2），后续命令仍可执行", file=sys.stderr)

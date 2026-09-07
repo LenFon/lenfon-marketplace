@@ -101,4 +101,6 @@ assets/
 
 ## 许可证
 
-[MIT](LICENSE) © 2026 lenfon
+本技能（wpf-basic-template）以 [MIT](LICENSE) 发布 © 2026 lenfon。
+
+用本技能生成的新项目，根目录 `LICENSE` **默认 MIT**，亦可选 `Apache-2.0` / `BSD-3-Clause` / `MPL-2.0` / `GPL-3.0`（脚手架 `--license` 指定，协议模板见 `scripts/licenses/`）。

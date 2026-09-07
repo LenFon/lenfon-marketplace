@@ -13,16 +13,18 @@ lenfon 于 2026-09-01 确立的个人标准模板。新建 WPF 项目一律照�
 **方式一（推荐）：一键脚手架**
 
 ```bash
-python scripts/scaffold.py <目标目录> <AppName>
+python scripts/scaffold.py <目标目录> <AppName> [--owner <公司/组织名>] [--license <协议>]
 ```
 
-一条命令完成：复制 `assets/` 全部模板文件（含 `.gitignore`）→ 占位符 `__APP_NAME__`（项目名）与 `__OWNER__`（版权所有者）替换（内容 + 文件/目录名）→ `git init` + 首次提交（`--no-git` 跳过）→ 打印带 env 前缀的后续 restore/build 命令。**版权所有者（LICENSE）应为公司/组织名，非项目名：省略 `--owner` 时默认带出 git 用户名并交互要求创建者确认/覆盖。**
+一条命令完成：复制 `assets/` 全部模板文件（含 `.gitignore`）→ 占位符 `__APP_NAME__`（项目名）、`__OWNER__`（版权所有者）、`__YEAR__`（年份）替换（内容 + 文件/目录名）→ 按 `--license` 选择协议生成根目录 `LICENSE`（`scripts/licenses/` 下模板；默认 `mit`，可选 `apache-2.0` / `bsd-3-clause` / `mpl-2.0` / `gpl-3.0`，均含常见别名如 `apache` / `gpl`）→ `git init` + 首次提交（`--no-git` 跳过）→ 打印带 env 前缀的后续 restore/build 命令。**版权所有者（LICENSE）应为公司/组织名，非项目名：省略 `--owner` 时默认带出 git 用户名并交互要求创建者确认/覆盖。**
 
-> **新建项目前必做（智能体执行时）**：先确认版权所有者（公司/组织名）。取 `git config user.name` 作为默认值，向创建者确认或让其覆盖，再把最终值作为 `--owner` 传入脚手架；非交互环境下脚本会自动回退到该默认值，不会卡住。
+> **新建项目前必做（智能体执行时）**：
+> 1. 确认版权所有者（公司/组织名）：取 `git config user.name` 作为默认值，向创建者确认或让其覆盖，再把最终值作为 `--owner` 传入脚手架；非交互环境下脚本自动回退默认值，不会卡住。
+> 2. 确认开源协议：默认 `mit`（最常用），向创建者确认或选其他（如 `apache-2.0` / `gpl-3.0`），把最终值作为 `--license` 传入脚手架。
 
 **方式二：手动分步**
 
-1. 复制 `assets/` 下模板文件到新解决方案目录（清单见 `references/06-assets-manifest.md`），并把占位符 `__APP_NAME__` 全局替换为实际项目名（文件名与文件内容都要替换），同时把 `__OWNER__` 替换为**公司/组织名**（非项目名；创建时由创建者确认，默认带出 git 用户名）。
+1. 复制 `assets/` 下模板文件到新解决方案目录（清单见 `references/06-assets-manifest.md`），并把占位符 `__APP_NAME__` 全局替换为实际项目名（文件名与文件内容都要替换）；`__OWNER__` 替换为**公司/组织名**（非项目名；创建时由创建者确认，默认带出 git 用户名），`__YEAR__` 替换为当前年；最后从 `scripts/licenses/` 选一份协议文本写入根 `LICENSE`（默认 `MIT`）。
 2. 核对 `Directory.Packages.props` 的包版本为 nuget.org 最新**稳定版**（包表见 `references/01-project-layout.md`）：直接运行 `python scripts/check-package-versions.py <项目根>/Directory.Packages.props`（纯标准库，逐包查询 + 成对包版本一致性校验；退出码 0=全部最新 1=存在可升级 2=出错）。**可与第 3 步的 restore 并行执行**——props 已是最新时 restore 不受核对影响，仅在发现可升级时改 props 后重新 build。
 3. 直接用 .NET SDK 还原包并编译生成的项目：`dotnet restore && dotnet build --no-restore`，迭代修复到 **0 错 0 警**（验证细则见 `references/05-build-verification.md`）。**Git Bash / PowerShell 宿主下首次 restore 必报 `path1` null**，直接带 env 前缀执行（`HOME` 须为 Windows 反斜杠路径，详见 `references/04-pitfalls.md`）：`env APPDATA='C:\Users\<用户>\AppData\Roaming' HOME='C:\Users\<用户>' PROGRAMFILES='C:\Program Files' dotnet restore`。
 4. 新增 View / ViewModel 时套用 `references/03-prism-and-ui.md` 与 `references/02-code-style.md` 的写法。
@@ -51,7 +53,7 @@ for p in pathlib.Path('.').rglob('*'):
 ├─ nuget.config               <- NuGet 源配置（仅官方源）
 ├─ .gitignore                 <- 忽略规则（含 .workbuddy/）
 ├─ README.md                  <- 项目说明文档（模板生成，无敏感信息）
-├─ LICENSE                    <- MIT 协议文本
+├─ LICENSE                    <- 开源协议文本（默认 MIT；可 apache-2.0 / bsd-3-clause / mpl-2.0 / gpl-3.0）
 └─ src/                       <- 所有项目一律在 src/ 下
    ├─ <AppName>/                  netX.0-windows，WPF 应用（Prism 组合根）
    │  ├─ Views/  ViewModels/
@@ -91,8 +93,9 @@ for p in pathlib.Path('.').rglob('*'):
 | `references/05-build-verification.md` | 直接用 .NET SDK `dotnet restore && dotnet build` 验证编译 0 错要求 |
 | `references/06-assets-manifest.md` | 模板文件清单 + 技能维护约定 |
 | `scripts/check-package-versions.py` | CPM 包版本核对脚本（逐包查 nuget.org 最新稳定版 + 成对包一致性校验，纯标准库） |
-| `scripts/scaffold.py` | 一键脚手架：复制 assets → 替换占位符（内容+文件名）→ git init + 首次提交 → 打印 env 前缀的 restore/build 命令（用法见快速流程方式一） |
-| `assets/` | 28 个可直接拷贝的模板文件（slnx / 两个 props / nuget.config / .gitignore / README.md / LICENSE / src 四层） |
+| `scripts/scaffold.py` | 一键脚手架：复制 assets → 替换占位符（`__APP_NAME__`/`__OWNER__`/`__YEAR__`）→ 按 `--license` 生成 `LICENSE` → git init + 首次提交 → 打印 env 前缀的 restore/build 命令（用法见快速流程方式一） |
+| `scripts/licenses/` | 开源协议模板（MIT / Apache-2.0 / BSD-3-Clause / MPL-2.0 / GPL-3.0），文件名即协议标识；脚手架按 `--license` 选其一写入新项目根 `LICENSE` |
+| `assets/` | 28 个可直接拷贝的模板文件（slnx / 两个 props / nuget.config / .gitignore / README.md / LICENSE【默认 MIT，脚手架覆写】 / src 四层） |
 
 ## 依赖技能
 

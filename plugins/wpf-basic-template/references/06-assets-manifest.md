@@ -10,7 +10,7 @@
 | `nuget.config` | NuGet 源：仅官方 `nuget.org`（详见 `01-project-layout.md`） |
 | `.gitignore` | 标准 WPF 忽略规则（bin/obj、.vs、publish、TestResults、OS 杂项）；含 `.workbuddy/` 排除项（scaffold.py 拷贝后自动 `git init` + 首次提交） |
 | `README.md` | 项目说明文档（模板生成，`__APP_NAME__` 占位符替换为实际项目名）；仅含技术栈/目录/构建说明，无个人身份、凭证或内网地址等敏感信息；挂在 `/解决方案项/` 下 |
-| `LICENSE` | MIT 协议文本（版权所有者用 `__OWNER__` 占位，应为**公司/组织名而非项目名**；随脚手架替换，创建时由创建者确认、默认带出 git 用户名；年份默认 2026）；挂在 `/解决方案项/` 下 |
+| `LICENSE` | 开源协议文本（默认 MIT，由脚手架按 `--license` 覆写）。版权所有者用 `__OWNER__` 占位（**公司/组织名而非项目名**），年份用 `__YEAR__` 占位（默认当前年）；随脚手架替换，创建时由创建者确认、默认带出 git 用户名。实际协议内容取自 `scripts/licenses/` 对应模板；挂在 `/解决方案项/` 下 |
 | `src/__APP_NAME__/__APP_NAME__.csproj` | WPF 应用，10 个包 + 3 个项目引用 |
 | `src/__APP_NAME__/App.xaml` / `.cs` | Prism 引导 + MD 主题 + Serilog/全局异常挂钩 |
 | `src/__APP_NAME__/App.GlobalException.cs` | 全局异常三钩子 + Serilog 配置（App 分部类） |
@@ -36,6 +36,7 @@
 - **只取稳定版**：禁 preview/alpha/beta/rc；成对包（Prism 双包、MD 双包）版本严格一致。
 - 坑位与写法变更即时手动更新，不等待任何定时任务。
 - 任何改动遵循本技能约定（CPM 集中管版本、csproj 不带 Version、纯 UTF-8 无 BOM、共享转换器字典、跨 DLL 命名空间带 `;assembly=`），保持与模板一致。
+- **新增协议**：在 `scripts/licenses/` 放 `<标识>.txt`（含 `__OWNER__` / `__YEAR__` 占位符），并在 `scaffold.py` 的 `LICENSE_ALIASES` 登记标识与别名（默认仍为 `mit`）。`assets/LICENSE` 仅作 MIT 默认占位，最终由脚手架按 `--license` 覆写。
 
 ## 技能本体维护约定
 
